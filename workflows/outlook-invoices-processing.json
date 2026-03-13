@@ -9,7 +9,7 @@
       "typeVersion": 1,
       "position": [
         -2896,
-        -752
+        -816
       ]
     },
     {
@@ -29,8 +29,8 @@
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1,
       "position": [
-        -656,
-        -480
+        16,
+        -552
       ],
       "id": "1f1f5e81-3d47-46c5-8ea7-2d1709256cc3",
       "name": "Analyze document",
@@ -60,7 +60,7 @@
       "typeVersion": 1,
       "position": [
         -2448,
-        -752
+        -816
       ]
     },
     {
@@ -80,12 +80,13 @@
       "typeVersion": 1,
       "position": [
         -2224,
-        -320
+        -552
       ]
     },
     {
       "parameters": {
         "operation": "getAll",
+        "returnAll": true,
         "filtersUI": {
           "values": {
             "filters": {
@@ -102,7 +103,7 @@
       "typeVersion": 2,
       "position": [
         -2672,
-        -752
+        -816
       ],
       "webhookId": "264d6487-dc64-4208-b981-ce2c79b324f0",
       "credentials": {
@@ -131,8 +132,8 @@
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
       "position": [
-        -1776,
-        -592
+        -1104,
+        -648
       ],
       "webhookId": "d75ec46e-3153-427c-8d3b-cbb63ac9f816",
       "credentials": {
@@ -170,8 +171,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -1552,
-        -592
+        -880,
+        -648
       ],
       "id": "08928542-98a9-4a6b-aa22-0448b53845d7",
       "name": "PDF?"
@@ -185,8 +186,8 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -2240,
-        -992
+        -576,
+        -1088
       ],
       "typeVersion": 1,
       "id": "663ff102-1673-4abe-92c2-05a10b36ab99",
@@ -211,7 +212,7 @@
       "typeVersion": 2,
       "position": [
         -2000,
-        -128
+        -456
       ],
       "id": "da53494b-b7d7-4c50-bcc2-2e6983c29a20",
       "name": "Get message body",
@@ -250,8 +251,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -880,
-        -208
+        -1104,
+        -456
       ],
       "id": "f272ca7a-c542-4a79-84a9-a65d3203d638",
       "name": "Filter PDFs"
@@ -271,8 +272,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1104,
-        -208
+        -1328,
+        -456
       ],
       "id": "3eb384d2-fd69-4354-ae35-6089f77e4fd4",
       "name": "Fetch URL1"
@@ -286,23 +287,10 @@
       "typeVersion": 2,
       "position": [
         -1776,
-        -128
+        -456
       ],
       "id": "e2792ee9-cee4-4e67-887a-3caadfa23a8b",
       "name": "Get links from message body"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitInBatches",
-      "typeVersion": 3,
-      "position": [
-        -1552,
-        -128
-      ],
-      "id": "1583882d-8e07-4d3a-9e39-906a90ce1668",
-      "name": "Loop Over Links"
     },
     {
       "parameters": {
@@ -313,8 +301,8 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        -1328,
-        -208
+        -1552,
+        -456
       ],
       "id": "e55e2a53-52d3-4c53-8a5c-0b7c7f280bf3",
       "name": "Split URLs"
@@ -327,8 +315,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -656,
-        -128
+        -880,
+        -456
       ],
       "id": "8f929728-f1df-401c-bd28-5bbdfba0af61",
       "name": "Prepare Output"
@@ -351,8 +339,8 @@
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
       "position": [
-        -1328,
-        -592
+        -656,
+        -648
       ],
       "id": "9ed599fd-920f-4966-ac3d-6fb01b159de0",
       "name": "Download attachment",
@@ -372,24 +360,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1104,
-        -592
+        -432,
+        -648
       ],
       "id": "03ed7eb1-6697-4a71-b366-fc287c4bf72a",
       "name": "Prepare Output1"
-    },
-    {
-      "parameters": {
-        "jsCode": "return {};"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -656,
-        64
-      ],
-      "id": "ca508d7e-8f41-4c91-9e51-f7728cecc41a",
-      "name": "Continue"
     },
     {
       "parameters": {
@@ -399,8 +374,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1104,
-        -400
+        -432,
+        -456
       ],
       "id": "3420a966-1e7e-4842-b335-da906ea30dcb",
       "name": "Prepare Output2"
@@ -432,8 +407,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -1328,
-        -400
+        -656,
+        -456
       ],
       "id": "0d97105a-4cb2-4ada-87d1-31c979e8a03b",
       "name": "If"
@@ -446,8 +421,8 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -2144,
-        -512
+        -1808,
+        -1032
       ],
       "typeVersion": 1,
       "id": "1b1cffe6-8f71-4955-a0cf-e9bd9bf79413",
@@ -462,8 +437,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -432,
-        -496
+        240,
+        -552
       ],
       "id": "8a29491f-bd7a-4fa7-b5f2-28482ecd9ea0",
       "name": "Validate Data"
@@ -496,8 +471,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -208,
-        -496
+        464,
+        -552
       ],
       "id": "09dbd881-6b81-494a-8696-d5a964a0ee02",
       "name": "Invoice Data Valid?"
@@ -557,8 +532,8 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        16,
-        -752
+        688,
+        -816
       ],
       "id": "38f6e8ab-b1da-4b6a-91ae-629ae17139e2",
       "name": "JDG or INC?"
@@ -591,8 +566,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -432,
-        -752
+        240,
+        -816
       ],
       "id": "884fe21a-f3f1-4f3c-a7b8-a92bb591ba22",
       "name": "Check Current Year Folder1"
@@ -605,8 +580,8 @@
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
       "position": [
-        -656,
-        -752
+        16,
+        -816
       ],
       "id": "283c8104-bfa4-4863-a986-363ad9625274",
       "name": "Get items in a folder1",
@@ -634,8 +609,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -880,
-        -752
+        -208,
+        -816
       ],
       "id": "1a790a80-b649-42d5-92fe-b31e99b9e099",
       "name": "Spółka Destination",
@@ -679,8 +654,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -432,
-        -944
+        240,
+        -1008
       ],
       "id": "0844ae3e-3aee-4b96-92e4-9e03928ec2ba",
       "name": "Check Current Year Folder"
@@ -693,8 +668,8 @@
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
       "position": [
-        -656,
-        -944
+        16,
+        -1008
       ],
       "id": "b9677310-1406-4055-9cde-538e09003c07",
       "name": "Get items in a folder",
@@ -722,8 +697,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -880,
-        -944
+        -208,
+        -1008
       ],
       "id": "69c9ae94-0f43-4050-a476-c5fdb32db103",
       "name": "JDG Destination",
@@ -737,8 +712,8 @@
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
       "position": [
-        -208,
-        -944
+        464,
+        -1008
       ],
       "id": "d17e402b-1a60-4378-954a-44e09f3a53dc",
       "name": "Get Months Folders JDG",
@@ -757,8 +732,8 @@
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
       "position": [
-        -208,
-        -752
+        464,
+        -816
       ],
       "id": "f538d7ff-bfa1-4085-b10c-8678e6e7c10a",
       "name": "Get Months Folders INC",
@@ -771,26 +746,26 @@
     },
     {
       "parameters": {
-        "jsCode": " // Get invoice data                                                                                                      \n  const invoiceData = $('Invoice Data Valid?').first().json;                                                             \n  const invoiceMonth = invoiceData['invoice_issued_month-pl'];                                                             \n                                                                                                                           \n  // Get all month folders from the current year folder                                                                    \n  const folders = $('Get Months Folders JDG').all();                                                                       \n                                                                   \n  // Find matching month folder                                                                                            \n  const matchingFolder = folders.find(folder => folder.json.name === invoiceMonth);\n                                                                                                                           \n  if (matchingFolder) {                                            \n    const dateCompact = (invoiceData.invoice_issued_date || '').replace(/-/g, '');                                         \n    const category = (invoiceData.category || 'unknown').toLowerCase();                                                    \n    const fileName = `${dateCompact}-${category}.pdf`;                                                                     \n                                                                                                                           \n    return [{                                                                                                              \n      json: {                                                      \n        folderId: matchingFolder.json.id,\n        folderName: matchingFolder.json.name,                                                                              \n        folderPath: matchingFolder.json.webUrl,                                                                            \n        fileName: fileName,                                                                                                \n        supplier_company: invoiceData.supplier_company,                                                                    \n        customer_tax_id: invoiceData.customer_tax_id,                                                                      \n        customer_company: invoiceData.customer_company,                                                                    \n        invoice_number: invoiceData.invoice_number,\n        invoice_issued_date: invoiceData.invoice_issued_date,                                                              \n        invoice_amount_net: invoiceData.invoice_amount_net,                                                                \n        invoice_amount_tax: invoiceData.invoice_amount_tax,                                                                \n        invoice_amount_gross: invoiceData.invoice_amount_gross,                                                            \n        currency: invoiceData.currency,                                                                                    \n        category: invoiceData.category                             \n      },\n      binary: $('StoreFile').item.binary\n    }];                                                                                                                    \n  } else {\n    throw new Error(`No folder found for month: ${invoiceMonth}`);                                                         \n  }                                             "
+        "jsCode": " // Get invoice data                                                                                                      \n  const invoiceData = $('Invoice Data Valid?').first().json;                                                             \n  const invoiceMonth = invoiceData['invoice_issued_month-pl'];                                                             \n                                                                                                                           \n  // Get all month folders from the current year folder                                                                    \n  const folders = $('Get Months Folders JDG').all();                                                                       \n                                                                   \n  // Find matching month folder                                                                                            \n  const matchingFolder = folders.find(folder => folder.json.name === invoiceMonth);\n                                                                                                                           \n  if (matchingFolder) {                                            \n    const dateCompact = (invoiceData.invoice_issued_date || '').replace(/-/g, '');                                         \n    const category = (invoiceData.category || 'unknown').toLowerCase();                                                    \n    const fileName = `${dateCompact}-${category}.pdf`;                                                                     \n\n  const renamedBinary = {                 \n      currentFile: {\n        ...$('StoreFile').first().binary.currentFile,\n        fileName: fileName \n      }\n    };      \n                                                                        \n    return [{                                                                                                              \n      json: {                                                      \n        folderId: matchingFolder.json.id,\n        folderName: matchingFolder.json.name,                                                                              \n        folderPath: matchingFolder.json.webUrl,                                                                            \n        fileName: fileName,                                                                                                \n        supplier_company: invoiceData.supplier_company,                                                                    \n        customer_tax_id: invoiceData.customer_tax_id,                                                                      \n        customer_company: invoiceData.customer_company,                                                                    \n        invoice_number: invoiceData.invoice_number,\n        invoice_issued_date: invoiceData.invoice_issued_date,                                                              \n        invoice_amount_net: invoiceData.invoice_amount_net,                                                                \n        invoice_amount_tax: invoiceData.invoice_amount_tax,                                                                \n        invoice_amount_gross: invoiceData.invoice_amount_gross,                                                            \n        currency: invoiceData.currency,                                                                                    \n        category: invoiceData.category                             \n      },\n      binary: renamedBinary                                        \n    }];                                                                                                                    \n  } else {\n    throw new Error(`No folder found for month: ${invoiceMonth}`);                                                         \n  }                                             "
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        240,
-        -848
+        912,
+        -912
       ],
       "id": "1492c640-882d-4419-98c7-41d1982f6183",
       "name": "SelectJDGFolder"
     },
     {
       "parameters": {
-        "jsCode": "// Get the month from invoice data\n  const invoiceData = $('Invoice Data Valid?').first().json;                                                               \n  const invoiceMonth = invoiceData['invoice_issued_month-pl'];\n                                                                                                                           \n  // Get all folders from the previous node                        \n  const folders = $('Get Months Folders INC').all();\n                                                                                                                           \n  // Find matching folder\n  const matchingFolder = folders.find(folder => folder.json.name === invoiceMonth);                                        \n                                                                   \n  const dateCompact = (invoiceData.invoice_issued_date || '').replace(/-/g, '');                                           \n  const category = (invoiceData.category || 'unknown').toLowerCase();\n  const fileName = `${dateCompact}-${category}.pdf`;                                                                       \n                                                                   \n  if (matchingFolder) {                                                                                                    \n    return [{                                                      \n      json: {\n        folderId: matchingFolder.json.id,\n        folderName: matchingFolder.json.name,                                                                              \n        folderPath: matchingFolder.json.webUrl,                                                                            \n        fileName: fileName,                                                                                                \n        supplier_company: invoiceData.supplier_company,                                                                    \n        customer_tax_id: invoiceData.customer_tax_id,              \n        customer_company: invoiceData.customer_company,                                                                    \n        invoice_number: invoiceData.invoice_number,\n        invoice_issued_date: invoiceData.invoice_issued_date,                                                              \n        invoice_amount_net: invoiceData.invoice_amount_net,        \n        invoice_amount_tax: invoiceData.invoice_amount_tax,                                                                \n        invoice_amount_gross: invoiceData.invoice_amount_gross,\n        currency: invoiceData.currency,                                                                                    \n        category: invoiceData.category                                                                                     \n      },                                                                                                                   \n      binary: $('StoreFile').item.binary                                                                                   \n    }];                                                                                                                    \n  } else {                                                         \n    throw new Error(`No folder found for month: ${invoiceMonth}`);                                                         \n  }"
+        "jsCode": "// Get the month from invoice data\n  const invoiceData = $('Invoice Data Valid?').first().json;                                                               \n  const invoiceMonth = invoiceData['invoice_issued_month-pl'];\n                                                                                                                           \n  // Get all folders from the previous node                        \n  const folders = $('Get Months Folders INC').all();\n                                                                                                                           \n  // Find matching folder\n  const matchingFolder = folders.find(folder => folder.json.name === invoiceMonth);                                        \n                                                                   \n  const dateCompact = (invoiceData.invoice_issued_date || '').replace(/-/g, '');                                           \n  const category = (invoiceData.category || 'unknown').toLowerCase();\n  const fileName = `${dateCompact}-${category}.pdf`;                    \n                                                                  \n  const renamedBinary = {                 \n      currentFile: {\n        ...$('StoreFile').first().binary.currentFile,\n        fileName: fileName \n      }\n    };  \n                                                                   \n  if (matchingFolder) {                                                                                                    \n    return [{                                                      \n      json: {\n        folderId: matchingFolder.json.id,\n        folderName: matchingFolder.json.name,                                                                              \n        folderPath: matchingFolder.json.webUrl,                                                                            \n        fileName: fileName,                                                                                                \n        supplier_company: invoiceData.supplier_company,                                                                    \n        customer_tax_id: invoiceData.customer_tax_id,              \n        customer_company: invoiceData.customer_company,                                                                    \n        invoice_number: invoiceData.invoice_number,\n        invoice_issued_date: invoiceData.invoice_issued_date,                                                              \n        invoice_amount_net: invoiceData.invoice_amount_net,        \n        invoice_amount_tax: invoiceData.invoice_amount_tax,                                                                \n        invoice_amount_gross: invoiceData.invoice_amount_gross,\n        currency: invoiceData.currency,                                                                                    \n        category: invoiceData.category                                                                                     \n      },                                                                                                                   \n      binary: renamedBinary\n    }];                                                                                                                    \n  } else {                                                         \n    throw new Error(`No folder found for month: ${invoiceMonth}`);                                                         \n  }"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        240,
-        -656
+        912,
+        -720
       ],
       "id": "7ad879fa-a160-431b-ad0e-d91a6710bf1f",
       "name": "SelectINCFolder"
@@ -805,8 +780,8 @@
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
       "position": [
-        464,
-        -848
+        1136,
+        -912
       ],
       "id": "46dec221-05a4-4534-9104-fff212c8b45c",
       "name": "Upload a file1",
@@ -840,8 +815,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -880,
-        -480
+        -208,
+        -552
       ],
       "id": "b34f895d-3884-4444-9441-cc3f0e20d52d",
       "name": "StoreFile"
@@ -856,8 +831,8 @@
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
       "position": [
-        464,
-        -656
+        1136,
+        -720
       ],
       "id": "ed7de5ae-b26c-4fa3-a1a2-885f260d82a2",
       "name": "Upload a file",
@@ -944,8 +919,8 @@
       "type": "n8n-nodes-base.microsoftExcel",
       "typeVersion": 2.2,
       "position": [
-        688,
-        -848
+        1360,
+        -912
       ],
       "id": "0b294420-e7cf-4561-a826-c6282f8fa0e1",
       "name": "Append data to sheet",
@@ -1032,8 +1007,8 @@
       "type": "n8n-nodes-base.microsoftExcel",
       "typeVersion": 2.2,
       "position": [
-        688,
-        -656
+        1360,
+        -720
       ],
       "id": "18c8692f-90f4-4fb4-8a3f-c92925bd6231",
       "name": "Append data to sheet1",
@@ -1059,8 +1034,8 @@
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
       "position": [
-        896,
-        -848
+        1584,
+        -912
       ],
       "id": "83f3a87b-4f68-4db2-aafe-3ed9ac9c774a",
       "name": "Update a message",
@@ -1087,8 +1062,8 @@
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
       "position": [
-        896,
-        -656
+        1584,
+        -720
       ],
       "id": "c78815a5-889a-4685-be72-54e5a04f4e87",
       "name": "Update a message1",
@@ -1126,7 +1101,7 @@
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
       "position": [
-        -2512,
+        -2896,
         -1232
       ],
       "id": "5d64de6b-18ed-4620-bc68-da09f2ab3016",
@@ -1140,7 +1115,16 @@
       }
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "▶️ Start": [
+      {
+        "json": {},
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
   "connections": {
     "▶️ Start": {
       "main": [
@@ -1267,35 +1251,11 @@
             "index": 0
           }
         ],
-        [
-          {
-            "node": "Continue",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Get links from message body": {
       "main": [
-        [
-          {
-            "node": "Loop Over Links",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Loop Over Links": {
-      "main": [
-        [
-          {
-            "node": "If",
-            "type": "main",
-            "index": 0
-          }
-        ],
         [
           {
             "node": "Split URLs",
@@ -1320,7 +1280,7 @@
       "main": [
         [
           {
-            "node": "Loop Over Links",
+            "node": "If",
             "type": "main",
             "index": 0
           }
@@ -1343,17 +1303,6 @@
         [
           {
             "node": "StoreFile",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Continue": {
-      "main": [
-        [
-          {
-            "node": "Loop Over Links",
             "type": "main",
             "index": 0
           }
@@ -1592,7 +1541,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "856880c3-79b4-434f-965d-53eab8834ccf",
+  "versionId": "e6029bb1-c392-4b00-a0ad-4d62468c73f2",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "8af463c3a1c8c1c27ad66af312247488390cc524503942b2fa0e78016f32ae38"
