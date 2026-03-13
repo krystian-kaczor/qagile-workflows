@@ -1,9 +1,5 @@
 {
-  "id": "aGu19fNOGsMOi4BZ",
   "name": "Outlook Invoices Processing",
-  "description": null,
-  "active": false,
-  "isArchived": false,
   "nodes": [
     {
       "parameters": {},
@@ -463,7 +459,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Parse and validate Gemini response\nconst item = $input.item;\n\n// Check for errors\nif (item.json.error) {\n  return {\n    json: {\n      isValid: false,\n      validationError: 'Gemini extraction failed',\n      messageId: item.json.messageId\n    }\n  };\n}\n\n// Get the text response from the correct path and clean markdown\nlet response = item.json.content?.parts?.[0]?.text || item.json.text || '';\nresponse = response.replace(/```json\\s*/g, '').replace(/```\\s*/g, '').trim();\n\ntry {\n  const data = JSON.parse(response);\n  \n  // Validation rules adapted to your new field names\n  const isValid = \n    (data.customer_tax_id === null || data.customer_tax_id?.length >= 10) &&  // Allow null or valid NIP\n    data.customer_company?.length > 0 &&\n    data.invoice_issued_date?.match(/\\d{4}-\\d{2}-\\d{2}/) &&\n    data.invoice_number?.length > 0 &&\n    data.invoice_amount_gross !== undefined &&\n    data.currency?.length >= 3 &&\n    data.category?.length > 0;\n  \n  return {\n    json: {\n      ...data,\n      isValid: isValid,\n      validationError: isValid ? null : 'Missing or invalid required fields',\n      messageId: item.json.messageId\n    },\n    binary: item.binary  // ← ADD THIS LINE\n  };\n  \n} catch (e) {\n  return {\n    json: {\n      isValid: false,\n      validationError: 'JSON parse failed: ' + e.message,\n      rawResponse: response.substring(0, 200),\n      messageId: item.json.messageId\n    }\n  };\n}"
+        "jsCode": " // Parse and validate Gemini response\n  const item = $input.item;\n\n  // Check for errors\n  if (item.json.error) {\n    return {\n      json: {\n        isValid: false,\n        validationError: 'Gemini extraction failed',\n        messageId: item.json.messageId\n      }\n    };\n  }\n\n  // Get the text response from the correct path and clean markdown\n  let response = item.json.content?.parts?.[0]?.text || item.json.text || '';\n  response = response.replace(/```json\\s*/g, '').replace(/```\\s*/g, '').trim();\n\n  try {\n    const data = JSON.parse(response);\n\n    const isValid =\n      (data.customer_tax_id === null || data.customer_tax_id?.length >= 10) &&\n      data.customer_company?.length > 0 &&\n      data.invoice_issued_date?.match(/\\d{4}-\\d{2}-\\d{2}/) &&\n      data.invoice_number?.length > 0 &&\n      data.invoice_amount_gross !== undefined &&\n      data.currency?.length >= 3 &&\n      data.category?.length > 0;\n\n    return {\n      json: {\n        ...data,\n        isValid: isValid,\n        validationError: isValid ? null : 'Missing or invalid required fields',\n        messageId: item.json.messageId\n      },\n      binary: $('Analyze document').item.binary\n    };\n\n  } catch (e) {\n    return {\n      json: {\n        isValid: false,\n        validationError: 'JSON parse failed: ' + e.message,\n        rawResponse: response.substring(0, 200),\n        messageId: item.json.messageId\n      }\n    };\n  }"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -507,23 +503,6 @@
       ],
       "id": "09dbd881-6b81-494a-8696-d5a964a0ee02",
       "name": "Invoice Data Valid?"
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.microsoftOneDrive",
-      "typeVersion": 1,
-      "position": [
-        2544,
-        592
-      ],
-      "id": "c489a276-60eb-4376-8def-5ede51363f8b",
-      "name": "Upload a file",
-      "credentials": {
-        "microsoftOneDriveOAuth2Api": {
-          "id": "TnsMOnxP20rBcpFv",
-          "name": "Microsoft Drive account"
-        }
-      }
     },
     {
       "parameters": {
@@ -794,7 +773,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Get the month from invoice data\nconst invoiceMonth = $('Invoice Data Valid?').first().json['invoice_issued_month-pl'];\n\n// Or if passed as input: $input.first().json[\"invoice_issued_month-pl\"]\n\n// Get all folders from the previous node\nconst folders = $('Get Months Folders JDG').all();\n\n\n// Find matching folder\nconst matchingFolder = folders.find(folder => folder.json.name === invoiceMonth);\n\n\nif (matchingFolder) {\n  return [{\n    json: {\n      folderId: matchingFolder.json.id,\n      folderName: matchingFolder.json.name,\n      folderPath: matchingFolder.json.webUrl\n    }\n  }];\n} else {\n  throw new Error(`No folder found for month: ${invoiceMonth}`);\n}"
+        "jsCode": " // Get invoice data                                                                                                      \n  const invoiceData = $('Invoice Data Valid?').first().json;\n  const invoiceMonth = invoiceData['invoice_issued_month-pl'];\n                                                                                                                           \n  // Get all month folders from the current year folder                                                                    \n  const folders = $('Get Months Folders JDG').all();                                                                       \n                                                                                                                           \n  // Find matching month folder                      \n  const matchingFolder = folders.find(folder => folder.json.name === invoiceMonth);\n\n\nif (matchingFolder) {\n  \n  const dateCompact = (invoiceData.invoice_issued_date || '').replace(/-/g, '');\n  const category = (invoiceData.category || 'unknown').toLowerCase();\n  const fileName = `${dateCompact}-${category}.pdf`;\n  \n  return [{\n    json: {\n      folderId: matchingFolder.json.id,\n      folderName: matchingFolder.json.name,\n      folderPath: matchingFolder.json.webUrl,\n      fileName: fileName\n    },\n    binary: $('StoreFile').item.binary\n  }];\n} else {\n  throw new Error(`No folder found for month: ${invoiceMonth}`);\n}"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -807,20 +786,7 @@
     },
     {
       "parameters": {
-        "content": "## I'm a note \nAdd fallback to some default folder (root folder?)"
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        1168,
-        176
-      ],
-      "id": "58c4028e-6ced-41b6-b939-035f5000702b",
-      "name": "Sticky Note2"
-    },
-    {
-      "parameters": {
-        "jsCode": "// Get the month from invoice data\nconst invoiceMonth = $('Invoice Data Valid?').first().json['invoice_issued_month-pl'];\n\n\n// Or if passed as input: $input.first().json[\"invoice_issued_month-pl\"]\n\n// Get all folders from the previous node\nconst folders = $('Get Months Folders INC').all();\n\n\n// Find matching folder\nconst matchingFolder = folders.find(folder => folder.json.name === invoiceMonth);\n\n\nif (matchingFolder) {\n  return [{\n    json: {\n      folderId: matchingFolder.json.id,\n      folderName: matchingFolder.json.name,\n      folderPath: matchingFolder.json.webUrl\n    }\n  }];\n} else {\n  throw new Error(`No folder found for month: ${invoiceMonth}`);\n}"
+        "jsCode": "// Get the month from invoice data\nconst invoiceMonth = $('Invoice Data Valid?').first().json['invoice_issued_month-pl'];\n\nconst invoiceData = $('Invoice Data Valid?').first().json;\n\n// Or if passed as input: $input.first().json[\"invoice_issued_month-pl\"]\n\n// Get all folders from the previous node\nconst folders = $('Get Months Folders INC').all();\n\n\n// Find matching folder\nconst matchingFolder = folders.find(folder => folder.json.name === invoiceMonth);\n\n const dateCompact = (invoiceData.invoice_issued_date || '').replace(/-/g, '');\n  const category = (invoiceData.category || 'unknown').toLowerCase();\n  const fileName = `${dateCompact}-${category}.pdf`;\n\nif (matchingFolder) {\n  return [{\n    json: {\n      folderId: matchingFolder.json.id,\n      folderName: matchingFolder.json.name,\n      folderPath: matchingFolder.json.webUrl,\n      fileName: fileName\n    },\n    binary: $('StoreFile').item.binary\n  }]\n} else {\n  throw new Error(`No folder found for month: ${invoiceMonth}`);\n}"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -833,10 +799,10 @@
     },
     {
       "parameters": {
-        "fileName": "test.pdf",
+        "fileName": "{{ $json.fileName }}",
         "parentId": "={{ $json.folderId }}",
         "binaryData": true,
-        "binaryPropertyName": "{{'Validate Data'}}.data"
+        "binaryPropertyName": "=currentFile"
       },
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
@@ -852,8 +818,450 @@
           "name": "Microsoft Drive account"
         }
       }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ec096b23-f3ce-4f96-b930-3c2963da10b3",
+              "name": "currentFile",
+              "value": "data",
+              "type": "binary"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -176,
+        16
+      ],
+      "id": "b34f895d-3884-4444-9441-cc3f0e20d52d",
+      "name": "StoreFile"
+    },
+    {
+      "parameters": {
+        "fileName": "{{ $json.fileName }}",
+        "parentId": "={{ $json.folderId }}",
+        "binaryData": true,
+        "binaryPropertyName": "=currentFile"
+      },
+      "type": "n8n-nodes-base.microsoftOneDrive",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        624
+      ],
+      "id": "ed7de5ae-b26c-4fa3-a1a2-885f260d82a2",
+      "name": "Upload a file",
+      "credentials": {
+        "microsoftOneDriveOAuth2Api": {
+          "id": "TnsMOnxP20rBcpFv",
+          "name": "Microsoft Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "worksheet",
+        "operation": "append",
+        "workbook": {
+          "__rl": true,
+          "value": "01VRIEXDKHG4RIJ75HYNEIK523PBMUVHR7",
+          "mode": "id"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{00000000-0001-0000-0000-000000000000}",
+          "mode": "list",
+          "cachedResultName": "Record"
+        },
+        "fieldsUi": {
+          "values": [
+            {
+              "column": "  fileName",
+              "fieldValue": "={{ $json.name }}"
+            },
+            {
+              "column": "  category",
+              "fieldValue": "={{ $('Validate Data').item.json.category }}"
+            },
+            {
+              "column": "invoice_number",
+              "fieldValue": "={{ $('Validate Data').item.json.invoice_number }}"
+            },
+            {
+              "column": "  folderPath",
+              "fieldValue": "={{ $json.parentReference.path }}"
+            },
+            {
+              "column": "  processed_date",
+              "fieldValue": "={{ new Date().toISOString().replace('T', ' ').substring(0, 19) }}"
+            },
+            {
+              "column": "  invoice_amount_net",
+              "fieldValue": "={{ $('Validate Data').item.json.invoice_amount_net }}"
+            },
+            {
+              "column": "  invoice_amount_gross",
+              "fieldValue": "={{ $('Validate Data').item.json.invoice_amount_gross }}"
+            },
+            {
+              "column": "  supplier_company",
+              "fieldValue": "={{ $('Validate Data').item.json.supplier_company }}"
+            },
+            {
+              "column": "  invoice_issued_date",
+              "fieldValue": "={{ $('Validate Data').item.json.invoice_issued_date }}"
+            },
+            {
+              "column": "  currency",
+              "fieldValue": "={{ $('Validate Data').item.json.currency }}"
+            },
+            {
+              "column": "  customer_tax_id",
+              "fieldValue": "={{ $('Validate Data').item.json.customer_tax_id }}"
+            },
+            {
+              "column": "  customer_company",
+              "fieldValue": "={{ $('Validate Data').item.json.customer_company }}"
+            },
+            {
+              "column": "  invoice_amount_tax",
+              "fieldValue": "={{ $('Validate Data').item.json.invoice_amount_tax }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftExcel",
+      "typeVersion": 2.2,
+      "position": [
+        1456,
+        384
+      ],
+      "id": "0b294420-e7cf-4561-a826-c6282f8fa0e1",
+      "name": "Append data to sheet",
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "3Qgyi4TOXVMCtl4f",
+          "name": "Microsoft Excel account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "worksheet",
+        "operation": "append",
+        "workbook": {
+          "__rl": true,
+          "value": "01VRIEXDKHG4RIJ75HYNEIK523PBMUVHR7",
+          "mode": "id"
+        },
+        "worksheet": {
+          "__rl": true,
+          "value": "{00000000-0001-0000-0000-000000000000}",
+          "mode": "list",
+          "cachedResultName": "Record"
+        },
+        "fieldsUi": {
+          "values": [
+            {
+              "column": "  fileName",
+              "fieldValue": "={{ $json.name }}"
+            },
+            {
+              "column": "  category",
+              "fieldValue": "={{ $('Validate Data').item.json.category }}"
+            },
+            {
+              "column": "invoice_number",
+              "fieldValue": "={{ $('Validate Data').item.json.invoice_number }}"
+            },
+            {
+              "column": "  folderPath",
+              "fieldValue": "={{ $json.parentReference.path }}"
+            },
+            {
+              "column": "  processed_date",
+              "fieldValue": "={{ new Date().toISOString().replace('T', ' ').substring(0, 19) }}"
+            },
+            {
+              "column": "  invoice_amount_net",
+              "fieldValue": "={{ $('Validate Data').item.json.invoice_amount_net }}"
+            },
+            {
+              "column": "  invoice_amount_gross",
+              "fieldValue": "={{ $('Validate Data').item.json.invoice_amount_gross }}"
+            },
+            {
+              "column": "  supplier_company",
+              "fieldValue": "={{ $('Validate Data').item.json.supplier_company }}"
+            },
+            {
+              "column": "  invoice_issued_date",
+              "fieldValue": "={{ $('Validate Data').item.json.invoice_issued_date }}"
+            },
+            {
+              "column": "  currency",
+              "fieldValue": "={{ $('Validate Data').item.json.currency }}"
+            },
+            {
+              "column": "  customer_tax_id",
+              "fieldValue": "={{ $('Validate Data').item.json.customer_tax_id }}"
+            },
+            {
+              "column": "  customer_company",
+              "fieldValue": "={{ $('Validate Data').item.json.customer_company }}"
+            },
+            {
+              "column": "  invoice_amount_tax",
+              "fieldValue": "={{ $('Validate Data').item.json.invoice_amount_tax }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftExcel",
+      "typeVersion": 2.2,
+      "position": [
+        1616,
+        624
+      ],
+      "id": "18c8692f-90f4-4fb4-8a3f-c92925bd6231",
+      "name": "Append data to sheet1",
+      "credentials": {
+        "microsoftExcelOAuth2Api": {
+          "id": "3Qgyi4TOXVMCtl4f",
+          "name": "Microsoft Excel account"
+        }
+      }
     }
   ],
+  "pinData": {
+    "Fetch Unread Emails": [
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQBGAAAAAABOSfow5RrEQacahtB9BQQVBwBzM-ExZr6IQpojMXAqHAiEAAbkqOmBAABzM-ExZr6IQpojMXAqHAiEAAdFuLkEAAA=",
+          "conversationId": "AAQkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAQAIfpc4AOvp5Mk5v-qCiwltY=",
+          "subject": "Your receipt from Anthropic, PBC #2538-7566-7066",
+          "bodyPreview": "Your receipt from Anthropic, PBC #2538-7566-7066  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏  ͏ ",
+          "from": "invoice+statements@mail.anthropic.com",
+          "to": [
+            "krystian.kaczor@qagile.pl"
+          ],
+          "categories": [],
+          "hasAttachments": true
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQBGAAAAAABOSfow5RrEQacahtB9BQQVBwBzM-ExZr6IQpojMXAqHAiEAAbkqOmBAABzM-ExZr6IQpojMXAqHAiEAAdFuLkDAAA=",
+          "conversationId": "AAQkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAQADDZLer8mUIMtSVnweeK4zM=",
+          "subject": "G43 Office Center - godziny pracy recepcji 10/11/2025",
+          "bodyPreview": "Szanowni Państwo,\r\n\r\nw poniedziałek (10/11/2025)  recepcja G43 Office Center będzie czynna w godzinach: 8:30 – 15:00\r\n\r\nZa ewentualne utrudnienia przepraszamy,\r\n\r\nDear Sirs,\r\n\r\non Monday – November 10th, reception will be open from 8:30 a.m. to 3:00 p.m.",
+          "from": "recepcja@g43office.pl",
+          "to": [
+            "recepcja@g43office.pl"
+          ],
+          "categories": [],
+          "hasAttachments": false
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQBGAAAAAABOSfow5RrEQacahtB9BQQVBwBzM-ExZr6IQpojMXAqHAiEAAbkqOmBAABzM-ExZr6IQpojMXAqHAiEAAdD_GYSAAA=",
+          "conversationId": "AAQkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAQAEQUFhrCw0EujUPEVzru-Is=",
+          "subject": "Faktura",
+          "bodyPreview": "Dzień dobry,\r\n\r\nPrzesyłam w załączeniu nową fakturę.\r\nW przypadku nie przekazania należnej sumy w wyznaczonym terminie od dnia 18/11/2025 będziemy Państwu naliczać odsetki.\r\n\r\nPozdrawiam,\r\n\r\nPaweł Jaworski\r\n\r\nCustomer Service Specialist\r\n\r\n\r\nUl. Grzybowsk",
+          "from": "recepcja@g43office.pl",
+          "to": [
+            "krystian.kaczor@qagile.pl",
+            "agnieszka.kaczor@qagile.pl"
+          ],
+          "categories": [],
+          "hasAttachments": true
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQBGAAAAAABOSfow5RrEQacahtB9BQQVBwBzM-ExZr6IQpojMXAqHAiEAAbkqOmBAABzM-ExZr6IQpojMXAqHAiEAAdAlxaGAAA=",
+          "conversationId": "AAQkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAQADv4nuQg_0i_rRBhyIkZ4UY=",
+          "subject": "G43 Office Center - godziny pracy recepcji 31/10/2025",
+          "bodyPreview": "Szanowni Państwo,\r\n\r\njutro (31/10/2025)  recepcja G43 Office Center będzie czynna w godzinach: 8:30 – 15:30\r\n\r\nZa ewentualne utrudnienia przepraszamy,\r\n\r\nDear Sirs,\r\n\r\nTomorrow – October 31st, reception will be open from 8:30 a.m. to 3:30 p.m.\r\n\r\nWe apolo",
+          "from": "recepcja@g43office.pl",
+          "to": [
+            "recepcja@g43office.pl"
+          ],
+          "categories": [],
+          "hasAttachments": false
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQBGAAAAAABOSfow5RrEQacahtB9BQQVBwBzM-ExZr6IQpojMXAqHAiEAAbkqOmBAABzM-ExZr6IQpojMXAqHAiEAAc-MGHFAAA=",
+          "conversationId": "AAQkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAQAJXvx3R3yDpGlLLdlWCRbYU=",
+          "subject": "Invoice Receipt for Order 2S858052",
+          "bodyPreview": "131 Middlesex Turnpike, Burlington, MA 01803, USA\r\n________________________________\r\n\r\n\r\nThank you for placing your order with Scrum.org!\r\n\r\nClick here to download a PDF copy of your Invoice\r\n\r\n________________________________\r\n\r\nDate 10/28/2025\r\n\r\n\r\nBi",
+          "from": "support@scrum.org",
+          "to": [
+            "krystian.kaczor@qagile.pl"
+          ],
+          "categories": [],
+          "hasAttachments": false
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQBGAAAAAABOSfow5RrEQacahtB9BQQVBwBzM-ExZr6IQpojMXAqHAiEAAbkqOmBAABzM-ExZr6IQpojMXAqHAiEAAc7_8gUAAA=",
+          "conversationId": "AAQkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAQAK87W1AyHV5Is1nS_-oOCyY=",
+          "subject": "Invoice Receipt for Order 2S856987",
+          "bodyPreview": "131 Middlesex Turnpike, Burlington, MA 01803, USA\r\n________________________________\r\n\r\n\r\nThank you for placing your order with Scrum.org!\r\n\r\nClick here to download a PDF copy of your Invoice\r\n\r\n________________________________\r\n\r\nDate 10/22/2025\r\n\r\n\r\nBi",
+          "from": "support@scrum.org",
+          "to": [
+            "krystian.kaczor@qagile.pl"
+          ],
+          "categories": [],
+          "hasAttachments": false
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQBGAAAAAABOSfow5RrEQacahtB9BQQVBwBzM-ExZr6IQpojMXAqHAiEAAbkqOmBAABzM-ExZr6IQpojMXAqHAiEAAc6WTO5AAA=",
+          "conversationId": "AAQkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAQADTvABxYUlRCnG8LnPFeYcA=",
+          "subject": "Invoice Receipt for Order 2S856661",
+          "bodyPreview": "131 Middlesex Turnpike, Burlington, MA 01803, USA\r\n________________________________\r\n\r\n\r\nThank you for placing your order with Scrum.org!\r\n\r\nClick here to download a PDF copy of your Invoice\r\n\r\n________________________________\r\n\r\nDate 10/21/2025\r\n\r\n\r\nBi",
+          "from": "support@scrum.org",
+          "to": [
+            "krystian.kaczor@qagile.pl"
+          ],
+          "categories": [],
+          "hasAttachments": false
+        }
+      }
+    ],
+    "Analyze document": [
+      {
+        "json": {
+          "content": {
+            "parts": [
+              {
+                "text": "```json\n{\n  \"supplier_company\": \"Scrum.org\",\n  \"customer_tax_id\": \"5272928285\",\n  \"customer_company\": \"QAgile Sp. z o.o. Sp. k.\",\n  \"invoice_number\": \"2S858052\",\n  \"invoice_issued_date\": \"2025-10-28\",\n  \"invoice_issued_year\": \"2025\",\n  \"invoice_issued_month-pl\": \"10 Październik\",\n  \"invoice_amount_net\": 300.00,\n  \"invoice_amount_tax\": 0.00,\n  \"invoice_amount_gross\": 300.00,\n  \"currency\": \"USD\",\n  \"category\": \"pspo-training\"\n}\n```"
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "index": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "content": {
+            "parts": [
+              {
+                "text": "```json\n{\n  \"supplier_company\": \"Scrum.org\",\n  \"customer_tax_id\": \"\",\n  \"customer_company\": \"QAgile Sp. z o.o. Sp. k.\",\n  \"invoice_number\": \"2S856987\",\n  \"invoice_issued_date\": \"2025-10-22\",\n  \"invoice_issued_year\": \"2025\",\n  \"invoice_issued_month-pl\": \"10 Październik\",\n  \"invoice_amount_net\": 200.00,\n  \"invoice_amount_tax\": 0.00,\n  \"invoice_amount_gross\": 200.00,\n  \"currency\": \"USD\",\n  \"category\": \"sps-training\"\n}\n```"
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "index": 0
+        },
+        "pairedItem": {
+          "item": 1
+        }
+      },
+      {
+        "json": {
+          "content": {
+            "parts": [
+              {
+                "text": "{\n  \"supplier_company\": \"Scrum.org\",\n  \"customer_tax_id\": \"\",\n  \"customer_company\": \"QAgile Sp. z o.o. Sp. k.\",\n  \"invoice_number\": \"2S856661\",\n  \"invoice_issued_date\": \"2025-10-21\",\n  \"invoice_issued_year\": \"2025\",\n  \"invoice_issued_month-pl\": \"10 Październik\",\n  \"invoice_amount_net\": 200.00,\n  \"invoice_amount_tax\": 0.00,\n  \"invoice_amount_gross\": 200.00,\n  \"currency\": \"USD\",\n  \"category\": \"psm-training\"\n}"
+              }
+            ],
+            "role": "model"
+          },
+          "finishReason": "STOP",
+          "index": 0
+        },
+        "pairedItem": {
+          "item": 2
+        }
+      }
+    ],
+    "Validate Data": [
+      {
+        "json": {
+          "supplier_company": "Scrum.org",
+          "customer_tax_id": "5272928285",
+          "customer_company": "QAgile Sp. z o.o. Sp. k.",
+          "invoice_number": "2S858052",
+          "invoice_issued_date": "2025-10-28",
+          "invoice_issued_year": "2025",
+          "invoice_issued_month-pl": "10 Październik",
+          "invoice_amount_net": 300,
+          "invoice_amount_tax": 0,
+          "invoice_amount_gross": 300,
+          "currency": "USD",
+          "category": "pspo-training",
+          "isValid": true,
+          "validationError": null
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "supplier_company": "Scrum.org",
+          "customer_tax_id": "",
+          "customer_company": "QAgile Sp. z o.o. Sp. k.",
+          "invoice_number": "2S856987",
+          "invoice_issued_date": "2025-10-22",
+          "invoice_issued_year": "2025",
+          "invoice_issued_month-pl": "10 Październik",
+          "invoice_amount_net": 200,
+          "invoice_amount_tax": 0,
+          "invoice_amount_gross": 200,
+          "currency": "USD",
+          "category": "sps-training",
+          "isValid": false,
+          "validationError": "Missing or invalid required fields"
+        },
+        "pairedItem": {
+          "item": 1
+        }
+      },
+      {
+        "json": {
+          "supplier_company": "Scrum.org",
+          "customer_tax_id": "",
+          "customer_company": "QAgile Sp. z o.o. Sp. k.",
+          "invoice_number": "2S856661",
+          "invoice_issued_date": "2025-10-21",
+          "invoice_issued_year": "2025",
+          "invoice_issued_month-pl": "10 Październik",
+          "invoice_amount_net": 200,
+          "invoice_amount_tax": 0,
+          "invoice_amount_gross": 200,
+          "currency": "USD",
+          "category": "psm-training",
+          "isValid": false,
+          "validationError": "Missing or invalid required fields"
+        },
+        "pairedItem": {
+          "item": 2
+        }
+      }
+    ]
+  },
   "connections": {
     "▶️ Start": {
       "main": [
@@ -1055,7 +1463,7 @@
       "main": [
         [
           {
-            "node": "Analyze document",
+            "node": "StoreFile",
             "type": "main",
             "index": 0
           }
@@ -1077,7 +1485,7 @@
       "main": [
         [
           {
-            "node": "Analyze document",
+            "node": "StoreFile",
             "type": "main",
             "index": 0
           }
@@ -1233,14 +1641,61 @@
           }
         ]
       ]
+    },
+    "SelectINCFolder": {
+      "main": [
+        [
+          {
+            "node": "Upload a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "StoreFile": {
+      "main": [
+        [
+          {
+            "node": "Analyze document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file1": {
+      "main": [
+        [
+          {
+            "node": "Append data to sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file": {
+      "main": [
+        [
+          {
+            "node": "Append data to sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
+  "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "pinData": {},
+  "versionId": "039a06e1-0114-4b72-aec0-77e88cb92326",
   "meta": {
-    "templateCredsSetupCompleted": true
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8af463c3a1c8c1c27ad66af312247488390cc524503942b2fa0e78016f32ae38"
   },
-  "versionId": "36cd4f88-75b4-4380-85e7-de5254c50829"
+  "id": "aGu19fNOGsMOi4BZ",
+  "tags": []
 }
