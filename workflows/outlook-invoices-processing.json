@@ -30,7 +30,7 @@
       "typeVersion": 1,
       "position": [
         16,
-        -552
+        -560
       ],
       "id": "1f1f5e81-3d47-46c5-8ea7-2d1709256cc3",
       "name": "Analyze document",
@@ -80,38 +80,8 @@
       "typeVersion": 1,
       "position": [
         -2224,
-        -552
+        -560
       ]
-    },
-    {
-      "parameters": {
-        "operation": "getAll",
-        "returnAll": true,
-        "filtersUI": {
-          "values": {
-            "filters": {
-              "foldersToInclude": "={{ [\"AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAbkqOmAAAA=\"], [\"AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAbkqOmAAAA=\"] }}",
-              "readStatus": "unread"
-            }
-          }
-        },
-        "options": {}
-      },
-      "id": "17b39714-9677-4070-b93f-c4e8368ffb15",
-      "name": "Fetch Unread Emails",
-      "type": "n8n-nodes-base.microsoftOutlook",
-      "typeVersion": 2,
-      "position": [
-        -2672,
-        -816
-      ],
-      "webhookId": "264d6487-dc64-4208-b981-ce2c79b324f0",
-      "credentials": {
-        "microsoftOutlookOAuth2Api": {
-          "id": "q4KrO58AZ1g2xStp",
-          "name": "Microsoft Outlook account"
-        }
-      }
     },
     {
       "parameters": {
@@ -133,7 +103,7 @@
       "typeVersion": 2,
       "position": [
         -1104,
-        -648
+        -736
       ],
       "webhookId": "d75ec46e-3153-427c-8d3b-cbb63ac9f816",
       "credentials": {
@@ -172,7 +142,7 @@
       "typeVersion": 2.2,
       "position": [
         -880,
-        -648
+        -736
       ],
       "id": "08928542-98a9-4a6b-aa22-0448b53845d7",
       "name": "PDF?"
@@ -180,14 +150,14 @@
     {
       "parameters": {
         "content": "## Fetch PDF attachements ",
-        "height": 432,
-        "width": 1728,
+        "height": 192,
+        "width": 1312,
         "color": 4
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -576,
-        -1088
+        -1536,
+        -768
       ],
       "typeVersion": 1,
       "id": "663ff102-1673-4abe-92c2-05a10b36ab99",
@@ -212,7 +182,7 @@
       "typeVersion": 2,
       "position": [
         -2000,
-        -456
+        -464
       ],
       "id": "da53494b-b7d7-4c50-bcc2-2e6983c29a20",
       "name": "Get message body",
@@ -251,8 +221,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -1104,
-        -456
+        -1024,
+        -80
       ],
       "id": "f272ca7a-c542-4a79-84a9-a65d3203d638",
       "name": "Filter PDFs"
@@ -272,8 +242,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1328,
-        -456
+        -1248,
+        -80
       ],
       "id": "3eb384d2-fd69-4354-ae35-6089f77e4fd4",
       "name": "Fetch URL1"
@@ -286,8 +256,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1776,
-        -456
+        -1696,
+        -80
       ],
       "id": "e2792ee9-cee4-4e67-887a-3caadfa23a8b",
       "name": "Get links from message body"
@@ -301,8 +271,8 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        -1552,
-        -456
+        -1472,
+        -80
       ],
       "id": "e55e2a53-52d3-4c53-8a5c-0b7c7f280bf3",
       "name": "Split URLs"
@@ -315,8 +285,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -880,
-        -456
+        -800,
+        -80
       ],
       "id": "8f929728-f1df-401c-bd28-5bbdfba0af61",
       "name": "Prepare Output"
@@ -340,7 +310,7 @@
       "typeVersion": 2,
       "position": [
         -656,
-        -648
+        -736
       ],
       "id": "9ed599fd-920f-4966-ac3d-6fb01b159de0",
       "name": "Download attachment",
@@ -361,7 +331,7 @@
       "typeVersion": 2,
       "position": [
         -432,
-        -648
+        -736
       ],
       "id": "03ed7eb1-6697-4a71-b366-fc287c4bf72a",
       "name": "Prepare Output1"
@@ -374,8 +344,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -432,
-        -456
+        -352,
+        -80
       ],
       "id": "3420a966-1e7e-4842-b335-da906ea30dcb",
       "name": "Prepare Output2"
@@ -407,8 +377,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -656,
-        -456
+        -576,
+        -80
       ],
       "id": "0d97105a-4cb2-4ada-87d1-31c979e8a03b",
       "name": "If"
@@ -416,13 +386,13 @@
     {
       "parameters": {
         "content": "## Fetch PDFs from links",
-        "height": 736,
-        "width": 1728
+        "height": 320,
+        "width": 1792
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -1808,
-        -1032
+        -2032,
+        -160
       ],
       "typeVersion": 1,
       "id": "1b1cffe6-8f71-4955-a0cf-e9bd9bf79413",
@@ -438,7 +408,7 @@
       "typeVersion": 2,
       "position": [
         240,
-        -552
+        -560
       ],
       "id": "8a29491f-bd7a-4fa7-b5f2-28482ecd9ea0",
       "name": "Validate Data"
@@ -472,7 +442,7 @@
       "typeVersion": 2.2,
       "position": [
         464,
-        -552
+        -560
       ],
       "id": "09dbd881-6b81-494a-8696-d5a964a0ee02",
       "name": "Invoice Data Valid?"
@@ -532,8 +502,8 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        688,
-        -816
+        832,
+        -1040
       ],
       "id": "38f6e8ab-b1da-4b6a-91ae-629ae17139e2",
       "name": "JDG or INC?"
@@ -566,8 +536,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        240,
-        -816
+        384,
+        -1040
       ],
       "id": "884fe21a-f3f1-4f3c-a7b8-a92bb591ba22",
       "name": "Check Current Year Folder1"
@@ -580,8 +550,8 @@
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
       "position": [
-        16,
-        -816
+        160,
+        -1040
       ],
       "id": "283c8104-bfa4-4863-a986-363ad9625274",
       "name": "Get items in a folder1",
@@ -609,8 +579,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -208,
-        -816
+        -64,
+        -1040
       ],
       "id": "1a790a80-b649-42d5-92fe-b31e99b9e099",
       "name": "Spółka Destination",
@@ -654,8 +624,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        240,
-        -1008
+        384,
+        -1232
       ],
       "id": "0844ae3e-3aee-4b96-92e4-9e03928ec2ba",
       "name": "Check Current Year Folder"
@@ -668,8 +638,8 @@
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
       "position": [
-        16,
-        -1008
+        160,
+        -1232
       ],
       "id": "b9677310-1406-4055-9cde-538e09003c07",
       "name": "Get items in a folder",
@@ -697,8 +667,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -208,
-        -1008
+        -64,
+        -1232
       ],
       "id": "69c9ae94-0f43-4050-a476-c5fdb32db103",
       "name": "JDG Destination",
@@ -712,8 +682,8 @@
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
       "position": [
-        464,
-        -1008
+        608,
+        -1232
       ],
       "id": "d17e402b-1a60-4378-954a-44e09f3a53dc",
       "name": "Get Months Folders JDG",
@@ -732,8 +702,8 @@
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
       "position": [
-        464,
-        -816
+        608,
+        -1040
       ],
       "id": "f538d7ff-bfa1-4085-b10c-8678e6e7c10a",
       "name": "Get Months Folders INC",
@@ -746,26 +716,26 @@
     },
     {
       "parameters": {
-        "jsCode": " // Get invoice data                                                                                                      \n  const invoiceData = $('Invoice Data Valid?').first().json;                                                             \n  const invoiceMonth = invoiceData['invoice_issued_month-pl'];                                                             \n                                                                                                                           \n  // Get all month folders from the current year folder                                                                    \n  const folders = $('Get Months Folders JDG').all();                                                                       \n                                                                   \n  // Find matching month folder                                                                                            \n  const matchingFolder = folders.find(folder => folder.json.name === invoiceMonth);\n                                                                                                                           \n  if (matchingFolder) {                                            \n    const dateCompact = (invoiceData.invoice_issued_date || '').replace(/-/g, '');                                         \n    const category = (invoiceData.category || 'unknown').toLowerCase();                                                    \n    const fileName = `${dateCompact}-${category}.pdf`;                                                                     \n\n  const renamedBinary = {                 \n      currentFile: {\n        ...$('StoreFile').first().binary.currentFile,\n        fileName: fileName \n      }\n    };      \n                                                                        \n    return [{                                                                                                              \n      json: {                                                      \n        folderId: matchingFolder.json.id,\n        folderName: matchingFolder.json.name,                                                                              \n        folderPath: matchingFolder.json.webUrl,                                                                            \n        fileName: fileName,                                                                                                \n        supplier_company: invoiceData.supplier_company,                                                                    \n        customer_tax_id: invoiceData.customer_tax_id,                                                                      \n        customer_company: invoiceData.customer_company,                                                                    \n        invoice_number: invoiceData.invoice_number,\n        invoice_issued_date: invoiceData.invoice_issued_date,                                                              \n        invoice_amount_net: invoiceData.invoice_amount_net,                                                                \n        invoice_amount_tax: invoiceData.invoice_amount_tax,                                                                \n        invoice_amount_gross: invoiceData.invoice_amount_gross,                                                            \n        currency: invoiceData.currency,                                                                                    \n        category: invoiceData.category                             \n      },\n      binary: renamedBinary                                        \n    }];                                                                                                                    \n  } else {\n    throw new Error(`No folder found for month: ${invoiceMonth}`);                                                         \n  }                                             "
+        "jsCode": " const allItems = $('Invoice Data Valid?').all();\n  const folders = $('Get Months Folders JDG').all();\n  const results = [];\n\n  for (const item of allItems) {\n    const invoiceData = item.json;\n    const invoiceMonth = invoiceData['invoice_issued_month-pl'];\n    const matchingFolder = folders.find(folder => folder.json.name === invoiceMonth);\n\n    if (matchingFolder) {\n      const dateCompact = (invoiceData.invoice_issued_date || '').replace(/-/g, '');\n      const category = (invoiceData.category || 'unknown').toLowerCase();\n      const fileName = `${dateCompact}-${category}.pdf`;\n\n      const storeFileItem = $('StoreFile').all()[results.length];\n      const renamedBinary = {\n        currentFile: {\n          ...storeFileItem.binary.currentFile,\n          fileName: fileName\n        }\n      };\n\n      results.push({\n        json: {\n          folderId: matchingFolder.json.id,\n          folderName: matchingFolder.json.name,\n          folderPath: matchingFolder.json.webUrl,\n          fileName: fileName,\n          messageID: storeFileItem.json.messageID,\n          supplier_company: invoiceData.supplier_company,\n          customer_tax_id: invoiceData.customer_tax_id,\n          customer_company: invoiceData.customer_company,\n          invoice_number: invoiceData.invoice_number,\n          invoice_issued_date: invoiceData.invoice_issued_date,\n          invoice_amount_net: invoiceData.invoice_amount_net,\n          invoice_amount_tax: invoiceData.invoice_amount_tax,\n          invoice_amount_gross: invoiceData.invoice_amount_gross,\n          currency: invoiceData.currency,\n          category: invoiceData.category\n        },\n        binary: renamedBinary\n      });\n    }\n  }\n\n  return results;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        912,
-        -912
+        1056,
+        -1136
       ],
       "id": "1492c640-882d-4419-98c7-41d1982f6183",
       "name": "SelectJDGFolder"
     },
     {
       "parameters": {
-        "jsCode": "// Get the month from invoice data\n  const invoiceData = $('Invoice Data Valid?').first().json;                                                               \n  const invoiceMonth = invoiceData['invoice_issued_month-pl'];\n                                                                                                                           \n  // Get all folders from the previous node                        \n  const folders = $('Get Months Folders INC').all();\n                                                                                                                           \n  // Find matching folder\n  const matchingFolder = folders.find(folder => folder.json.name === invoiceMonth);                                        \n                                                                   \n  const dateCompact = (invoiceData.invoice_issued_date || '').replace(/-/g, '');                                           \n  const category = (invoiceData.category || 'unknown').toLowerCase();\n  const fileName = `${dateCompact}-${category}.pdf`;                    \n                                                                  \n  const renamedBinary = {                 \n      currentFile: {\n        ...$('StoreFile').first().binary.currentFile,\n        fileName: fileName \n      }\n    };  \n                                                                   \n  if (matchingFolder) {                                                                                                    \n    return [{                                                      \n      json: {\n        folderId: matchingFolder.json.id,\n        folderName: matchingFolder.json.name,                                                                              \n        folderPath: matchingFolder.json.webUrl,                                                                            \n        fileName: fileName,                                                                                                \n        supplier_company: invoiceData.supplier_company,                                                                    \n        customer_tax_id: invoiceData.customer_tax_id,              \n        customer_company: invoiceData.customer_company,                                                                    \n        invoice_number: invoiceData.invoice_number,\n        invoice_issued_date: invoiceData.invoice_issued_date,                                                              \n        invoice_amount_net: invoiceData.invoice_amount_net,        \n        invoice_amount_tax: invoiceData.invoice_amount_tax,                                                                \n        invoice_amount_gross: invoiceData.invoice_amount_gross,\n        currency: invoiceData.currency,                                                                                    \n        category: invoiceData.category                                                                                     \n      },                                                                                                                   \n      binary: renamedBinary\n    }];                                                                                                                    \n  } else {                                                         \n    throw new Error(`No folder found for month: ${invoiceMonth}`);                                                         \n  }"
+        "jsCode": " const allItems = $('Invoice Data Valid?').all();\n  const folders = $('Get Months Folders JDG').all();\n  const results = [];\n\n  for (const item of allItems) {\n    const invoiceData = item.json;\n    const invoiceMonth = invoiceData['invoice_issued_month-pl'];\n    const matchingFolder = folders.find(folder => folder.json.name === invoiceMonth);\n\n    if (matchingFolder) {\n      const dateCompact = (invoiceData.invoice_issued_date || '').replace(/-/g, '');\n      const category = (invoiceData.category || 'unknown').toLowerCase();\n      const fileName = `${dateCompact}-${category}.pdf`;\n\n      const storeFileItem = $('StoreFile').all()[results.length];\n      const renamedBinary = {\n        currentFile: {\n          ...storeFileItem.binary.currentFile,\n          fileName: fileName\n        }\n      };\n\n      results.push({\n        json: {\n          folderId: matchingFolder.json.id,\n          folderName: matchingFolder.json.name,\n          folderPath: matchingFolder.json.webUrl,\n          fileName: fileName,\n          messageID: storeFileItem.json.messageID,\n          supplier_company: invoiceData.supplier_company,\n          customer_tax_id: invoiceData.customer_tax_id,\n          customer_company: invoiceData.customer_company,\n          invoice_number: invoiceData.invoice_number,\n          invoice_issued_date: invoiceData.invoice_issued_date,\n          invoice_amount_net: invoiceData.invoice_amount_net,\n          invoice_amount_tax: invoiceData.invoice_amount_tax,\n          invoice_amount_gross: invoiceData.invoice_amount_gross,\n          currency: invoiceData.currency,\n          category: invoiceData.category\n        },\n        binary: renamedBinary\n      });\n    }\n  }\n\n  return results;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        912,
-        -720
+        1088,
+        -800
       ],
       "id": "7ad879fa-a160-431b-ad0e-d91a6710bf1f",
       "name": "SelectINCFolder"
@@ -780,8 +750,8 @@
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
       "position": [
-        1136,
-        -912
+        1424,
+        -1136
       ],
       "id": "46dec221-05a4-4534-9104-fff212c8b45c",
       "name": "Upload a file1",
@@ -816,7 +786,7 @@
       "typeVersion": 3.4,
       "position": [
         -208,
-        -552
+        -560
       ],
       "id": "b34f895d-3884-4444-9441-cc3f0e20d52d",
       "name": "StoreFile"
@@ -831,8 +801,8 @@
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
       "position": [
-        1136,
-        -720
+        1456,
+        -800
       ],
       "id": "ed7de5ae-b26c-4fa3-a1a2-885f260d82a2",
       "name": "Upload a file",
@@ -919,8 +889,8 @@
       "type": "n8n-nodes-base.microsoftExcel",
       "typeVersion": 2.2,
       "position": [
-        1360,
-        -912
+        1632,
+        -1136
       ],
       "id": "0b294420-e7cf-4561-a826-c6282f8fa0e1",
       "name": "Append data to sheet",
@@ -1007,8 +977,8 @@
       "type": "n8n-nodes-base.microsoftExcel",
       "typeVersion": 2.2,
       "position": [
-        1360,
-        -720
+        1680,
+        -800
       ],
       "id": "18c8692f-90f4-4fb4-8a3f-c92925bd6231",
       "name": "Append data to sheet1",
@@ -1024,7 +994,7 @@
         "operation": "update",
         "messageId": {
           "__rl": true,
-          "value": "= {{ $('StoreFile').first().json.messageID }}  ",
+          "value": "={{ $('SelectJDGFolder').item.json.messageID }}",
           "mode": "id"
         },
         "updateFields": {
@@ -1034,8 +1004,8 @@
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
       "position": [
-        1584,
-        -912
+        1232,
+        -1136
       ],
       "id": "83f3a87b-4f68-4db2-aafe-3ed9ac9c774a",
       "name": "Update a message",
@@ -1052,7 +1022,7 @@
         "operation": "update",
         "messageId": {
           "__rl": true,
-          "value": "= {{ $('StoreFile').first().json.messageID }}  ",
+          "value": "={{ $('SelectINCFolder').item.json.messageID }}",
           "mode": "id"
         },
         "updateFields": {
@@ -1062,12 +1032,127 @@
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
       "position": [
-        1584,
-        -720
+        1264,
+        -800
       ],
       "id": "c78815a5-889a-4685-be72-54e5a04f4e87",
       "name": "Update a message1",
       "webhookId": "1ba70a3d-654a-44d3-985f-e99eb2a19e46",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "q4KrO58AZ1g2xStp",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Find Current Year Folder",
+        "height": 608,
+        "width": 1008,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -240,
+        -1472
+      ],
+      "typeVersion": 1,
+      "id": "d5a6d728-4c43-468b-bfef-ce772232bd89",
+      "name": "Sticky Note2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "html_content": "={{ $('Get message body').item.json.body.content }}",
+        "output_format": "file"
+      },
+      "type": "n8n-nodes-htmlcsstopdf.htmlcsstopdf",
+      "typeVersion": 1,
+      "position": [
+        -1648,
+        -448
+      ],
+      "id": "155c6985-78bd-4deb-bd7f-ce551193536a",
+      "name": "Convert HTML to PDF",
+      "credentials": {
+        "htmlcsstopdfApi": {
+          "id": "EnDeI9T4n7p4HmiX",
+          "name": "HTML to PDF account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "107c1650-13b7-43c1-8bc0-8fe3052d121a",
+              "leftValue": "={{ $('Has attachment').item.json.from }}",
+              "rightValue": "@mailchimp.com",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1920,
+        -96
+      ],
+      "id": "14006a6d-3acc-4ec0-9323-4501bfa5b303",
+      "name": "From Mailchip?"
+    },
+    {
+      "parameters": {
+        "content": "## Store Mailchimp Receipt as PDF",
+        "height": 240,
+        "width": 608
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1712,
+        -528
+      ],
+      "id": "bef327bb-e86f-4b67-a13d-2b39f5896c23",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": true,
+        "filtersUI": {
+          "values": {
+            "filters": {
+              "foldersToInclude": "={{ [\"AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAbkqOmAAAA=\",\n  \"AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAbkqOmBAAA=\"] }}",
+              "readStatus": "unread"
+            }
+          }
+        },
+        "options": {}
+      },
+      "id": "17b39714-9677-4070-b93f-c4e8368ffb15",
+      "name": "Fetch Unread Emails From Faktury Folders",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -2672,
+        -816
+      ],
+      "webhookId": "264d6487-dc64-4208-b981-ce2c79b324f0",
       "credentials": {
         "microsoftOutlookOAuth2Api": {
           "id": "q4KrO58AZ1g2xStp",
@@ -1105,7 +1190,7 @@
         -1232
       ],
       "id": "5d64de6b-18ed-4620-bc68-da09f2ab3016",
-      "name": "Get many folders1",
+      "name": "Check Subfolders ID",
       "webhookId": "e7bf5279-c3a3-4c6e-82d9-81676b923422",
       "credentials": {
         "microsoftOutlookOAuth2Api": {
@@ -1123,6 +1208,643 @@
           "item": 0
         }
       }
+    ],
+    "Check Subfolders ID": [
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAALP6zPxAAA=",
+          "displayName": "Agora",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAABscPAmAAA=",
+          "displayName": "Axa",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAADIPQULAAA=",
+          "displayName": "BMW",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAAEBAXSAAA=",
+          "displayName": "BNP Paribas",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAICa4_NAAA=",
+          "displayName": "Budimex",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAHW5k3DAAA=",
+          "displayName": "Chmura Krajowa",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAADkdlWfAAA=",
+          "displayName": "Credi",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAGO2sBUAAA=",
+          "displayName": "Deutche Telekom",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAL6h6FTAAA=",
+          "displayName": "DHL",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAHdATR7AAA=",
+          "displayName": "ETS",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAACx-2nWAAA=",
+          "displayName": "HubSpot CRM",
+          "childFolderCount": 1
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAACBeT7VAAA=",
+          "displayName": "Intercars",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAL6h6FVAAA=",
+          "displayName": "ISO",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAABlh2AxAAA=",
+          "displayName": "KGHM",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAPEUGFnAAA=",
+          "displayName": "KIR",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAKGQLdOAAA=",
+          "displayName": "LinkedIn",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAJcUIOXAAA=",
+          "displayName": "Mailchimp",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAGxzSENAAA=",
+          "displayName": "mBank",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAIi8zfEAAA=",
+          "displayName": "Meetup",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAADpn4bVAAA=",
+          "displayName": "Mercedes",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAB8x-g4AAA=",
+          "displayName": "Millenium",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAALP6zPyAAA=",
+          "displayName": "Miquido",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAJcUIOWAAA=",
+          "displayName": "Newsletters",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAAE78syAAA=",
+          "displayName": "NN",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAABw8UBfAAA=",
+          "displayName": "Orange",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAGyC6EHAAA=",
+          "displayName": "PARP",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAABscPAlAAA=",
+          "displayName": "Pekao SA",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAABdBDy5AAA=",
+          "displayName": "Phillip Morris International",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAABlh2AwAAA=",
+          "displayName": "PKO BP",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAJKDrCYAAA=",
+          "displayName": "Pocket Guide",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAL6h6FUAAA=",
+          "displayName": "Politechnika Grańska",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAZhhubSAAA=",
+          "displayName": "Portal Biura",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAADIPQUKAAA=",
+          "displayName": "PSM II",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAABXsLaAAA=",
+          "displayName": "QAgile",
+          "childFolderCount": 3
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAItNb3sAAA=",
+          "displayName": "QAgile Sp zoo Sp k",
+          "childFolderCount": 9
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAABEIqWAAA=",
+          "displayName": "Raiffeisen",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAUjUXzHAAA=",
+          "displayName": "Rubber Duck",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAGJWJ3sAAA=",
+          "displayName": "S@S",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAHdATR6AAA=",
+          "displayName": "Santander Consumer Bank",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAHDAQQvAAA=",
+          "displayName": "Scrum.org",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAKDEVisAAA=",
+          "displayName": "STS",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAACn8MeMAAA=",
+          "displayName": "TMPL",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAC3j6zCAAA=",
+          "displayName": "Value Streams",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAC_7DgzAAA=",
+          "displayName": "Volvo",
+          "childFolderCount": 0
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAAK3_48AAA=",
+          "displayName": "Done",
+          "parentFolderId": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAACx-2nWAAA=",
+          "childFolderCount": 0,
+          "unreadItemCount": 0,
+          "totalItemCount": 102,
+          "sizeInBytes": 14173013,
+          "isHidden": false
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAbkqOmAAAA=",
+          "displayName": "Faktury",
+          "parentFolderId": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAABXsLaAAA=",
+          "childFolderCount": 0,
+          "unreadItemCount": 3,
+          "totalItemCount": 20,
+          "sizeInBytes": 4705202,
+          "isHidden": false
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAH8nlzWAAA=",
+          "displayName": "Online",
+          "parentFolderId": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAABXsLaAAA=",
+          "childFolderCount": 0,
+          "unreadItemCount": 0,
+          "totalItemCount": 627,
+          "sizeInBytes": 22129976,
+          "isHidden": false
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAH3xUUVAAA=",
+          "displayName": "Webinar",
+          "parentFolderId": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAABXsLaAAA=",
+          "childFolderCount": 0,
+          "unreadItemCount": 0,
+          "totalItemCount": 13,
+          "sizeInBytes": 1117121,
+          "isHidden": false
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAZa0LuZAAA=",
+          "displayName": "Autopay",
+          "parentFolderId": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAItNb3sAAA=",
+          "childFolderCount": 0,
+          "unreadItemCount": 0,
+          "totalItemCount": 10,
+          "sizeInBytes": 1318872,
+          "isHidden": false
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAARbPYeaAAA=",
+          "displayName": "Business Sense",
+          "parentFolderId": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAItNb3sAAA=",
+          "childFolderCount": 0,
+          "unreadItemCount": 0,
+          "totalItemCount": 183,
+          "sizeInBytes": 50246031,
+          "isHidden": false
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAW2WjdZAAA=",
+          "displayName": "Creativa Legal",
+          "parentFolderId": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAItNb3sAAA=",
+          "childFolderCount": 0,
+          "unreadItemCount": 0,
+          "totalItemCount": 4,
+          "sizeInBytes": 1083726,
+          "isHidden": false
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAbJlLc4AAA=",
+          "displayName": "EduNitro",
+          "parentFolderId": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAItNb3sAAA=",
+          "childFolderCount": 0,
+          "unreadItemCount": 0,
+          "totalItemCount": 0,
+          "sizeInBytes": 0,
+          "isHidden": false
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAbkqOmBAAA=",
+          "displayName": "Faktury INC",
+          "parentFolderId": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAItNb3sAAA=",
+          "childFolderCount": 0,
+          "unreadItemCount": 25,
+          "totalItemCount": 257,
+          "sizeInBytes": 56030719,
+          "isHidden": false
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAWizhjrAAA=",
+          "displayName": "Maja Gawrońska",
+          "parentFolderId": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAItNb3sAAA=",
+          "childFolderCount": 0,
+          "unreadItemCount": 0,
+          "totalItemCount": 341,
+          "sizeInBytes": 80160481,
+          "isHidden": false
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAYWogTpAAA=",
+          "displayName": "Mayko",
+          "parentFolderId": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAItNb3sAAA=",
+          "childFolderCount": 0,
+          "unreadItemCount": 0,
+          "totalItemCount": 94,
+          "sizeInBytes": 24623542,
+          "isHidden": false
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAALOZ8ESAAA=",
+          "displayName": "Mentzen",
+          "parentFolderId": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAItNb3sAAA=",
+          "childFolderCount": 0,
+          "unreadItemCount": 0,
+          "totalItemCount": 444,
+          "sizeInBytes": 509551876,
+          "isHidden": false
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "id": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAaBiO53AAA=",
+          "displayName": "Stripe",
+          "parentFolderId": "AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAItNb3sAAA=",
+          "childFolderCount": 0,
+          "unreadItemCount": 10,
+          "totalItemCount": 24,
+          "sizeInBytes": 2438922,
+          "isHidden": false
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
     ]
   },
   "connections": {
@@ -1130,7 +1852,7 @@
       "main": [
         [
           {
-            "node": "Fetch Unread Emails",
+            "node": "Fetch Unread Emails From Faktury Folders",
             "type": "main",
             "index": 0
           }
@@ -1187,17 +1909,6 @@
         ]
       ]
     },
-    "Fetch Unread Emails": {
-      "main": [
-        [
-          {
-            "node": "Any Emails?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Get Attachments": {
       "main": [
         [
@@ -1224,7 +1935,7 @@
       "main": [
         [
           {
-            "node": "Get links from message body",
+            "node": "From Mailchip?",
             "type": "main",
             "index": 0
           }
@@ -1463,7 +2174,7 @@
       "main": [
         [
           {
-            "node": "Upload a file1",
+            "node": "Update a message",
             "type": "main",
             "index": 0
           }
@@ -1474,7 +2185,7 @@
       "main": [
         [
           {
-            "node": "Upload a file",
+            "node": "Update a message1",
             "type": "main",
             "index": 0
           }
@@ -1516,20 +2227,70 @@
     },
     "Append data to sheet": {
       "main": [
+        []
+      ]
+    },
+    "Append data to sheet1": {
+      "main": [
+        []
+      ]
+    },
+    "From Mailchip?": {
+      "main": [
         [
           {
-            "node": "Update a message",
+            "node": "Convert HTML to PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get links from message body",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Append data to sheet1": {
+    "Convert HTML to PDF": {
       "main": [
         [
           {
-            "node": "Update a message1",
+            "node": "StoreFile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Unread Emails From Faktury Folders": {
+      "main": [
+        [
+          {
+            "node": "Any Emails?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a message": {
+      "main": [
+        [
+          {
+            "node": "Upload a file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a message1": {
+      "main": [
+        [
+          {
+            "node": "Upload a file",
             "type": "main",
             "index": 0
           }
@@ -1541,7 +2302,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "e6029bb1-c392-4b00-a0ad-4d62468c73f2",
+  "versionId": "aba507e5-e14e-4a65-af5b-8166d3c7a0ac",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "8af463c3a1c8c1c27ad66af312247488390cc524503942b2fa0e78016f32ae38"
