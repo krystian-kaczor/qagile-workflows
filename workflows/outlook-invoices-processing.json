@@ -743,9 +743,9 @@
     {
       "parameters": {
         "fileName": "{{ $json.fileName }}",
-        "parentId": "={{ $json.folderId }}",
+        "parentId": "={{ $('SelectJDGFolder').item.json.folderId }}",
         "binaryData": true,
-        "binaryPropertyName": "=currentFile"
+        "binaryPropertyName": "={{ $('SelectJDGFolder').item.binary.currentFile }}"
       },
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
@@ -794,9 +794,9 @@
     {
       "parameters": {
         "fileName": "{{ $json.fileName }}",
-        "parentId": "={{ $json.folderId }}",
+        "parentId": "={{ $('SelectINColder').item.json.folderId }}",
         "binaryData": true,
-        "binaryPropertyName": "=currentFile"
+        "binaryPropertyName": "={{ $('SelectINCFolder').item.binary.currentFile }}"
       },
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
@@ -2302,7 +2302,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "aba507e5-e14e-4a65-af5b-8166d3c7a0ac",
+  "versionId": "8ec7d748-6c55-4dc5-9315-3e545ff59265",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "8af463c3a1c8c1c27ad66af312247488390cc524503942b2fa0e78016f32ae38"
