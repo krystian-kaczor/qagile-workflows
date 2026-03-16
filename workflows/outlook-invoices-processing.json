@@ -3,13 +3,13 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "aa50f3cc-bd92-44c8-b639-5b8b830e87ef",
+      "id": "97863b02-bb28-4edd-8fd8-c90fa59d0840",
       "name": "▶️ Start",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -2896,
-        -816
+        -9088,
+        -2400
       ]
     },
     {
@@ -29,10 +29,10 @@
       "type": "@n8n/n8n-nodes-langchain.googleGemini",
       "typeVersion": 1,
       "position": [
-        16,
-        -560
+        -6176,
+        -2144
       ],
-      "id": "1f1f5e81-3d47-46c5-8ea7-2d1709256cc3",
+      "id": "aa09fae1-89e1-44d3-85b9-1628b4b8ad88",
       "name": "Analyze document",
       "retryOnFail": true,
       "waitBetweenTries": 5000,
@@ -51,16 +51,22 @@
               "value1": "={{ $input.all().length }}",
               "operation": "larger"
             }
+          ],
+          "string": [
+            {
+              "value1": "={{ $json.isRead }}",
+              "value2": "={{ false }}"
+            }
           ]
         }
       },
-      "id": "46f581fb-6ba6-4389-87a4-c2cf451af836",
+      "id": "e3229774-d209-43f7-a6a0-0d5f26f5b3b0",
       "name": "Any Emails?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        -2448,
-        -816
+        -8640,
+        -2400
       ]
     },
     {
@@ -74,13 +80,13 @@
           ]
         }
       },
-      "id": "f4d04b42-eff6-4b5c-b372-ffa3a1a0249f",
+      "id": "060ec4a4-f887-40da-9ea0-3d1897c5e03e",
       "name": "Has attachment",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
       "position": [
-        -2224,
-        -560
+        -8416,
+        -2144
       ]
     },
     {
@@ -97,13 +103,13 @@
           "fields": []
         }
       },
-      "id": "9d45cd9c-76f2-49dd-827c-b7547e03927a",
+      "id": "e3c4c94d-3d3a-4a51-b5f9-dd112a3f4aac",
       "name": "Get Attachments",
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
       "position": [
-        -1104,
-        -736
+        -7296,
+        -2320
       ],
       "webhookId": "d75ec46e-3153-427c-8d3b-cbb63ac9f816",
       "credentials": {
@@ -141,10 +147,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -880,
-        -736
+        -7072,
+        -2320
       ],
-      "id": "08928542-98a9-4a6b-aa22-0448b53845d7",
+      "id": "1d05782a-7a9c-4ce7-b45d-6a970c954ab6",
       "name": "PDF?"
     },
     {
@@ -156,11 +162,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -1536,
-        -768
+        -7728,
+        -2352
       ],
       "typeVersion": 1,
-      "id": "663ff102-1673-4abe-92c2-05a10b36ab99",
+      "id": "d6938ed4-df3b-4c7b-9102-865b209d2b6d",
       "name": "Sticky Note",
       "disabled": true
     },
@@ -181,10 +187,10 @@
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
       "position": [
-        -2000,
-        -464
+        -8192,
+        -2048
       ],
-      "id": "da53494b-b7d7-4c50-bcc2-2e6983c29a20",
+      "id": "03e9c20d-970e-4543-aeda-790d070b6d5a",
       "name": "Get message body",
       "webhookId": "b29af958-f0d2-4613-bb2d-78031fe128e4",
       "credentials": {
@@ -221,10 +227,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
-        -1024,
-        -80
+        -7216,
+        -1664
       ],
-      "id": "f272ca7a-c542-4a79-84a9-a65d3203d638",
+      "id": "004aba03-82db-4245-a8b8-24e2c63135e5",
       "name": "Filter PDFs"
     },
     {
@@ -242,10 +248,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -1248,
-        -80
+        -7440,
+        -1664
       ],
-      "id": "3eb384d2-fd69-4354-ae35-6089f77e4fd4",
+      "id": "71897beb-daef-4a6d-920c-57ce29ef965a",
       "name": "Fetch URL1"
     },
     {
@@ -256,10 +262,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1696,
-        -80
+        -7888,
+        -1664
       ],
-      "id": "e2792ee9-cee4-4e67-887a-3caadfa23a8b",
+      "id": "38f3f317-adf9-4965-b910-d8030d87e2a2",
       "name": "Get links from message body"
     },
     {
@@ -271,10 +277,10 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        -1472,
-        -80
+        -7664,
+        -1664
       ],
-      "id": "e55e2a53-52d3-4c53-8a5c-0b7c7f280bf3",
+      "id": "54cbb6f2-9d9b-4a7a-9d87-d34405a0bda5",
       "name": "Split URLs"
     },
     {
@@ -285,10 +291,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -800,
-        -80
+        -6992,
+        -1664
       ],
-      "id": "8f929728-f1df-401c-bd28-5bbdfba0af61",
+      "id": "b3087631-171f-4063-ab9b-2a73a3f3d508",
       "name": "Prepare Output"
     },
     {
@@ -309,10 +315,10 @@
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
       "position": [
-        -656,
-        -736
+        -6848,
+        -2320
       ],
-      "id": "9ed599fd-920f-4966-ac3d-6fb01b159de0",
+      "id": "1bf8992d-60b9-46ad-ae36-dc9e4bdc7180",
       "name": "Download attachment",
       "webhookId": "66771a3d-4f76-4bff-9d19-ec33d48029da",
       "credentials": {
@@ -330,10 +336,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -432,
-        -736
+        -6624,
+        -2320
       ],
-      "id": "03ed7eb1-6697-4a71-b366-fc287c4bf72a",
+      "id": "b2a13229-36cb-4d0c-bc9e-7c3e0b29266f",
       "name": "Prepare Output1"
     },
     {
@@ -344,10 +350,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -352,
-        -80
+        -6544,
+        -1664
       ],
-      "id": "3420a966-1e7e-4842-b335-da906ea30dcb",
+      "id": "0a84d8ef-cc67-4c6c-a602-b15a469a7c07",
       "name": "Prepare Output2"
     },
     {
@@ -377,10 +383,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -576,
-        -80
+        -6768,
+        -1664
       ],
-      "id": "0d97105a-4cb2-4ada-87d1-31c979e8a03b",
+      "id": "9a06e439-cbb0-4a39-964a-323c48389f8b",
       "name": "If"
     },
     {
@@ -391,11 +397,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -2032,
-        -160
+        -8224,
+        -1744
       ],
       "typeVersion": 1,
-      "id": "1b1cffe6-8f71-4955-a0cf-e9bd9bf79413",
+      "id": "dc26cf2b-87f1-435b-8804-6aee97649827",
       "name": "Sticky Note1",
       "disabled": true
     },
@@ -407,10 +413,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        240,
-        -560
+        -5952,
+        -2144
       ],
-      "id": "8a29491f-bd7a-4fa7-b5f2-28482ecd9ea0",
+      "id": "2dfa06be-5d21-4878-ac7e-22092a60c7c5",
       "name": "Validate Data"
     },
     {
@@ -441,10 +447,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        464,
-        -560
+        -5728,
+        -2144
       ],
-      "id": "09dbd881-6b81-494a-8696-d5a964a0ee02",
+      "id": "e124fb64-acc3-4d24-9c6e-c1ebef3556da",
       "name": "Invoice Data Valid?"
     },
     {
@@ -454,7 +460,7 @@
             {
               "conditions": {
                 "options": {
-                  "caseSensitive": true,
+                  "caseSensitive": false,
                   "leftValue": "",
                   "typeValidation": "strict",
                   "version": 2
@@ -476,7 +482,7 @@
             {
               "conditions": {
                 "options": {
-                  "caseSensitive": true,
+                  "caseSensitive": false,
                   "leftValue": "",
                   "typeValidation": "strict",
                   "version": 2
@@ -497,15 +503,17 @@
             }
           ]
         },
-        "options": {}
+        "options": {
+          "ignoreCase": true
+        }
       },
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        832,
-        -1040
+        -5360,
+        -2624
       ],
-      "id": "38f6e8ab-b1da-4b6a-91ae-629ae17139e2",
+      "id": "59b75192-b503-4f97-bd32-6563538e2124",
       "name": "JDG or INC?"
     },
     {
@@ -520,12 +528,22 @@
           "conditions": [
             {
               "id": "7d104df1-45fd-4b4d-8a61-7fb7e4de2f06",
-              "leftValue": "",
-              "rightValue": "",
+              "leftValue": "={{ $json.name }}",
+              "rightValue": "={{ new Date().getFullYear().toString() }}",
               "operator": {
                 "type": "string",
                 "operation": "equals",
                 "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "b64160b4-55db-4dff-a6b8-432032996ce6",
+              "leftValue": "={{ $json.folder }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
               }
             }
           ],
@@ -536,10 +554,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        384,
-        -1040
+        -5808,
+        -2624
       ],
-      "id": "884fe21a-f3f1-4f3c-a7b8-a92bb591ba22",
+      "id": "67e9fc4d-18b5-4f0c-a510-2ac4e7ce3d00",
       "name": "Check Current Year Folder1"
     },
     {
@@ -550,10 +568,10 @@
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
       "position": [
-        160,
-        -1040
+        -6032,
+        -2624
       ],
-      "id": "283c8104-bfa4-4863-a986-363ad9625274",
+      "id": "53e215dd-8d95-4d0b-af8b-bfafcf5c8f55",
       "name": "Get items in a folder1",
       "credentials": {
         "microsoftOneDriveOAuth2Api": {
@@ -579,10 +597,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -64,
-        -1040
+        -6256,
+        -2624
       ],
-      "id": "1a790a80-b649-42d5-92fe-b31e99b9e099",
+      "id": "54c8c8e7-c14a-4725-8ed3-abd405150526",
       "name": "Spółka Destination",
       "executeOnce": true
     },
@@ -624,10 +642,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        384,
-        -1232
+        -5808,
+        -2816
       ],
-      "id": "0844ae3e-3aee-4b96-92e4-9e03928ec2ba",
+      "id": "728b0762-23cb-42e2-9561-17ca3dd1c2ff",
       "name": "Check Current Year Folder"
     },
     {
@@ -638,10 +656,10 @@
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
       "position": [
-        160,
-        -1232
+        -6032,
+        -2816
       ],
-      "id": "b9677310-1406-4055-9cde-538e09003c07",
+      "id": "a7a2eeee-6629-47e1-aefd-a0514df9bd09",
       "name": "Get items in a folder",
       "credentials": {
         "microsoftOneDriveOAuth2Api": {
@@ -667,10 +685,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -64,
-        -1232
+        -6256,
+        -2816
       ],
-      "id": "69c9ae94-0f43-4050-a476-c5fdb32db103",
+      "id": "5afeaf9d-7403-4e38-b31d-09afb20ba95f",
       "name": "JDG Destination",
       "executeOnce": true
     },
@@ -682,10 +700,10 @@
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
       "position": [
-        608,
-        -1232
+        -5584,
+        -2816
       ],
-      "id": "d17e402b-1a60-4378-954a-44e09f3a53dc",
+      "id": "acfe9a4e-4c99-4b74-b31c-1b3d0fb8ab1d",
       "name": "Get Months Folders JDG",
       "credentials": {
         "microsoftOneDriveOAuth2Api": {
@@ -702,10 +720,10 @@
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
       "position": [
-        608,
-        -1040
+        -5584,
+        -2624
       ],
-      "id": "f538d7ff-bfa1-4085-b10c-8678e6e7c10a",
+      "id": "0f0aa391-202a-425f-9455-10566da801de",
       "name": "Get Months Folders INC",
       "credentials": {
         "microsoftOneDriveOAuth2Api": {
@@ -721,23 +739,23 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1056,
-        -1136
+        -5136,
+        -2720
       ],
-      "id": "1492c640-882d-4419-98c7-41d1982f6183",
+      "id": "7f04b2d6-2acf-48ea-9a69-97fe825ac9f8",
       "name": "SelectJDGFolder"
     },
     {
       "parameters": {
-        "jsCode": " const allItems = $('Invoice Data Valid?').all();\n  const folders = $('Get Months Folders JDG').all();\n  const results = [];\n\n  for (const item of allItems) {\n    const invoiceData = item.json;\n    const invoiceMonth = invoiceData['invoice_issued_month-pl'];\n    const matchingFolder = folders.find(folder => folder.json.name === invoiceMonth);\n\n    if (matchingFolder) {\n      const dateCompact = (invoiceData.invoice_issued_date || '').replace(/-/g, '');\n      const category = (invoiceData.category || 'unknown').toLowerCase();\n      const fileName = `${dateCompact}-${category}.pdf`;\n\n      const storeFileItem = $('StoreFile').all()[results.length];\n      const renamedBinary = {\n        currentFile: {\n          ...storeFileItem.binary.currentFile,\n          fileName: fileName\n        }\n      };\n\n      results.push({\n        json: {\n          folderId: matchingFolder.json.id,\n          folderName: matchingFolder.json.name,\n          folderPath: matchingFolder.json.webUrl,\n          fileName: fileName,\n          messageID: storeFileItem.json.messageID,\n          supplier_company: invoiceData.supplier_company,\n          customer_tax_id: invoiceData.customer_tax_id,\n          customer_company: invoiceData.customer_company,\n          invoice_number: invoiceData.invoice_number,\n          invoice_issued_date: invoiceData.invoice_issued_date,\n          invoice_amount_net: invoiceData.invoice_amount_net,\n          invoice_amount_tax: invoiceData.invoice_amount_tax,\n          invoice_amount_gross: invoiceData.invoice_amount_gross,\n          currency: invoiceData.currency,\n          category: invoiceData.category\n        },\n        binary: renamedBinary\n      });\n    }\n  }\n\n  return results;"
+        "jsCode": " const allItems = $('Invoice Data Valid?').all();\n  const folders = $('Get Months Folders INC').all();\n  const results = [];\n\n  for (const item of allItems) {\n    const invoiceData = item.json;\n    const invoiceMonth = invoiceData['invoice_issued_month-pl'];\n    const matchingFolder = folders.find(folder => folder.json.name === invoiceMonth);\n\n    if (matchingFolder) {\n      const dateCompact = (invoiceData.invoice_issued_date || '').replace(/-/g, '');\n      const category = (invoiceData.category || 'unknown').toLowerCase();\n      const fileName = `${dateCompact}-${category}.pdf`;\n\n      const storeFileItem = $('StoreFile').all()[results.length];\n      const renamedBinary = {\n        currentFile: {\n          ...storeFileItem.binary.currentFile,\n          fileName: fileName\n        }\n      };\n\n      results.push({\n        json: {\n          folderId: matchingFolder.json.id,\n          folderName: matchingFolder.json.name,\n          folderPath: matchingFolder.json.webUrl,\n          fileName: fileName,\n          messageID: storeFileItem.json.messageID,\n          supplier_company: invoiceData.supplier_company,\n          customer_tax_id: invoiceData.customer_tax_id,\n          customer_company: invoiceData.customer_company,\n          invoice_number: invoiceData.invoice_number,\n          invoice_issued_date: invoiceData.invoice_issued_date,\n          invoice_amount_net: invoiceData.invoice_amount_net,\n          invoice_amount_tax: invoiceData.invoice_amount_tax,\n          invoice_amount_gross: invoiceData.invoice_amount_gross,\n          currency: invoiceData.currency,\n          category: invoiceData.category\n        },\n        binary: renamedBinary\n      });\n    }\n  }\n\n  return results;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1088,
-        -800
+        -5104,
+        -2384
       ],
-      "id": "7ad879fa-a160-431b-ad0e-d91a6710bf1f",
+      "id": "a09d59a2-3afd-4a1a-bb6d-08a0b390742c",
       "name": "SelectINCFolder"
     },
     {
@@ -750,10 +768,10 @@
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
       "position": [
-        1424,
-        -1136
+        -4768,
+        -2720
       ],
-      "id": "46dec221-05a4-4534-9104-fff212c8b45c",
+      "id": "5dae6470-8626-49bd-b529-da8cf6ab4962",
       "name": "Upload a file1",
       "credentials": {
         "microsoftOneDriveOAuth2Api": {
@@ -785,26 +803,26 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -208,
-        -560
+        -6400,
+        -2144
       ],
-      "id": "b34f895d-3884-4444-9441-cc3f0e20d52d",
+      "id": "bcf3d15b-511a-4fa8-9a6f-11e22ea7dc1e",
       "name": "StoreFile"
     },
     {
       "parameters": {
         "fileName": "{{ $json.fileName }}",
-        "parentId": "={{ $('SelectINColder').item.json.folderId }}",
+        "parentId": "={{ $('SelectINCFolder').item.json.folderId }}",
         "binaryData": true,
         "binaryPropertyName": "={{ $('SelectINCFolder').item.binary.currentFile }}"
       },
       "type": "n8n-nodes-base.microsoftOneDrive",
       "typeVersion": 1,
       "position": [
-        1456,
-        -800
+        -4736,
+        -2384
       ],
-      "id": "ed7de5ae-b26c-4fa3-a1a2-885f260d82a2",
+      "id": "d038c342-3392-438b-9487-a4a8f6d22016",
       "name": "Upload a file",
       "credentials": {
         "microsoftOneDriveOAuth2Api": {
@@ -889,10 +907,10 @@
       "type": "n8n-nodes-base.microsoftExcel",
       "typeVersion": 2.2,
       "position": [
-        1632,
-        -1136
+        -4560,
+        -2720
       ],
-      "id": "0b294420-e7cf-4561-a826-c6282f8fa0e1",
+      "id": "f88e959c-22e2-463a-8c2c-d22a0b94b053",
       "name": "Append data to sheet",
       "credentials": {
         "microsoftExcelOAuth2Api": {
@@ -977,10 +995,10 @@
       "type": "n8n-nodes-base.microsoftExcel",
       "typeVersion": 2.2,
       "position": [
-        1680,
-        -800
+        -4512,
+        -2384
       ],
-      "id": "18c8692f-90f4-4fb4-8a3f-c92925bd6231",
+      "id": "2f9f5852-27d6-4645-8f0b-1ed181afd8ea",
       "name": "Append data to sheet1",
       "credentials": {
         "microsoftExcelOAuth2Api": {
@@ -1004,10 +1022,10 @@
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
       "position": [
-        1232,
-        -1136
+        -4960,
+        -2720
       ],
-      "id": "83f3a87b-4f68-4db2-aafe-3ed9ac9c774a",
+      "id": "592be37c-f1d4-4a4c-83dc-5ecdcba43656",
       "name": "Update a message",
       "webhookId": "1ba70a3d-654a-44d3-985f-e99eb2a19e46",
       "credentials": {
@@ -1032,10 +1050,10 @@
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
       "position": [
-        1264,
-        -800
+        -4928,
+        -2384
       ],
-      "id": "c78815a5-889a-4685-be72-54e5a04f4e87",
+      "id": "4880975a-ac74-4b81-bf1c-5eb455422ccc",
       "name": "Update a message1",
       "webhookId": "1ba70a3d-654a-44d3-985f-e99eb2a19e46",
       "credentials": {
@@ -1054,11 +1072,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -240,
-        -1472
+        -6432,
+        -3056
       ],
       "typeVersion": 1,
-      "id": "d5a6d728-4c43-468b-bfef-ce772232bd89",
+      "id": "182fc866-fead-432c-8f51-e522a5a3a061",
       "name": "Sticky Note2",
       "disabled": true
     },
@@ -1070,10 +1088,10 @@
       "type": "n8n-nodes-htmlcsstopdf.htmlcsstopdf",
       "typeVersion": 1,
       "position": [
-        -1648,
-        -448
+        -7840,
+        -2032
       ],
-      "id": "155c6985-78bd-4deb-bd7f-ce551193536a",
+      "id": "93e03a92-31bc-415c-a03c-b8d89b6de24a",
       "name": "Convert HTML to PDF",
       "credentials": {
         "htmlcsstopdfApi": {
@@ -1109,10 +1127,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -1920,
-        -96
+        -8112,
+        -1680
       ],
-      "id": "14006a6d-3acc-4ec0-9323-4501bfa5b303",
+      "id": "06168372-cafe-40c8-b7de-1c42fa0bb4a7",
       "name": "From Mailchip?"
     },
     {
@@ -1124,33 +1142,44 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -1712,
-        -528
+        -7904,
+        -2112
       ],
-      "id": "bef327bb-e86f-4b67-a13d-2b39f5896c23",
+      "id": "184bf378-5a29-4169-8422-583c7ddd7549",
       "name": "Sticky Note3"
     },
     {
       "parameters": {
         "operation": "getAll",
         "returnAll": true,
+        "output": "fields",
+        "fields": [
+          "isRead",
+          "subject",
+          "toRecipients",
+          "receivedDateTime",
+          "parentFolderId",
+          "hasAttachments",
+          "from"
+        ],
         "filtersUI": {
           "values": {
             "filters": {
-              "foldersToInclude": "={{ [\"AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAbkqOmAAAA=\",\n  \"AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAbkqOmBAAA=\"] }}",
+              "custom": "",
+              "foldersToInclude": "={{ [\"AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAbkqOmAAAA=\",\"AAMkAGY5ZmMxZjc3LTUyYmYtNDUzZS05YjkyLWRiNWY0MDI0NjVmOQAuAAAAAABOSfow5RrEQacahtB9BQQVAQBzM-ExZr6IQpojMXAqHAiEAAbkqOmBAAA=\"] }}",
               "readStatus": "unread"
             }
           }
         },
         "options": {}
       },
-      "id": "17b39714-9677-4070-b93f-c4e8368ffb15",
+      "id": "ee393d8d-0793-4f64-b0c9-b651f24b2313",
       "name": "Fetch Unread Emails From Faktury Folders",
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
       "position": [
-        -2672,
-        -816
+        -8864,
+        -2400
       ],
       "webhookId": "264d6487-dc64-4208-b981-ce2c79b324f0",
       "credentials": {
@@ -1186,10 +1215,10 @@
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
       "position": [
-        -2896,
-        -1232
+        -9088,
+        -2816
       ],
-      "id": "5d64de6b-18ed-4620-bc68-da09f2ab3016",
+      "id": "5e4fb6f7-3816-4387-a0e3-ef33e2fa7622",
       "name": "Check Subfolders ID",
       "webhookId": "e7bf5279-c3a3-4c6e-82d9-81676b923422",
       "credentials": {
@@ -1961,8 +1990,7 @@
             "type": "main",
             "index": 0
           }
-        ],
-        []
+        ]
       ]
     },
     "Get links from message body": {
@@ -2225,16 +2253,6 @@
         ]
       ]
     },
-    "Append data to sheet": {
-      "main": [
-        []
-      ]
-    },
-    "Append data to sheet1": {
-      "main": [
-        []
-      ]
-    },
     "From Mailchip?": {
       "main": [
         [
@@ -2302,7 +2320,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "8ec7d748-6c55-4dc5-9315-3e545ff59265",
+  "versionId": "d997d577-c0ba-4ad6-a353-13d47554bd91",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "8af463c3a1c8c1c27ad66af312247488390cc524503942b2fa0e78016f32ae38"
