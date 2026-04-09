@@ -1,5 +1,11 @@
 {
+  "updatedAt": "2026-04-09T14:02:57.560Z",
+  "createdAt": "2026-04-03T21:03:32.110Z",
+  "id": "1MLHq9gEDw5lD8Y7",
   "name": "Course Audit - Check Publishing Status",
+  "description": null,
+  "active": true,
+  "isArchived": false,
   "nodes": [
     {
       "parameters": {
@@ -164,7 +170,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const html = $input.first().json.data || '';\nconst results = [];\nconst seen = new Set();\nconst productPattern = /data-gtm-product-name\\[\\d+\\]='([^']+)'/g;\nlet match;\nwhile ((match = productPattern.exec(html)) !== null) {\n  const fullName = match[1];\n  if (seen.has(fullName)) continue;\n  seen.add(fullName);\n  const dateMatch = fullName.match(/\\s*-\\s*(\\d{1,2}(?:-\\d{1,2})?\\.(\\d{1,2})\\.(\\d{4}))\\s*$/);\n  let courseName = fullName, courseDate = null;\n  if (dateMatch) {\n    courseDate = dateMatch[1];\n    courseName = fullName.substring(0, fullName.lastIndexOf(dateMatch[0])).trim();\n  }\n  results.push({ json: { source: 'online', courseName, originalTitle: fullName, courseDate } });\n}\nif (results.length === 0) return [{ json: { source: 'online', courseName: 'NO_COURSES_FOUND', courseDate: null } }];\nreturn results;"
+        "jsCode": "// Merge products from homepage (PSM-AI, APS etc) and listing page (PSFS etc)\n// Merge homepage (has PSM-AI, APS etc) and listing page (has PSFS)\nconst htmlHome = $('Fetch online.qagile.pl Courses').first().json.data || '';\nconst htmlListing = $input.first().json.data || '';\nconst html = htmlHome + htmlListing;\nconst results = [];\nconst seen = new Set();\nconst productPattern = /data-gtm-product-name\\[\\d+\\]='([^']+)'/g;\nlet match;\nwhile ((match = productPattern.exec(html)) !== null) {\n  const fullName = match[1];\n  if (seen.has(fullName)) continue;\n  seen.add(fullName);\n  const dateMatch = fullName.match(/\\s*-\\s*(\\d{1,2}(?:-\\d{1,2})?\\.(\\d{1,2})\\.(\\d{4}))\\s*$/);\n  let courseName = fullName, courseDate = null;\n  if (dateMatch) {\n    courseDate = dateMatch[1];\n    courseName = fullName.substring(0, fullName.lastIndexOf(dateMatch[0])).trim();\n  }\n  results.push({ json: { source: 'online', courseName, originalTitle: fullName, courseDate } });\n}\nif (results.length === 0) return [{ json: { source: 'online', courseName: 'NO_COURSES_FOUND', courseDate: null } }];\nreturn results;"
       },
       "id": "n8",
       "name": "Parse online.qagile.pl Courses",
@@ -210,13 +216,30 @@
     },
     {
       "parameters": {
-        "url": "https://uslugirozwojowe.parp.gov.pl/wyszukiwarka/uslugi/szukaj?dostawcyUslug%5B%5D=135453",
+        "url": "https://uslugirozwojowe.parp.gov.pl/wyszukiwarka/uslugi/szukaj?dostawcyUslug%5B%5D=135453&wynikiNaStronie=100",
         "options": {
           "response": {
             "response": {
               "responseFormat": "text"
             }
           }
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "pl-PL,pl;q=0.9,en;q=0.8"
+            },
+            {
+              "name": "Accept",
+              "value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            }
+          ]
         }
       },
       "id": "n12",
@@ -230,27 +253,7 @@
     },
     {
       "parameters": {
-        "url": "https://uslugirozwojowe.parp.gov.pl/wyszukiwarka/uslugi/szukaj?dostawcyUslug%5B%5D=135453&strona=2",
-        "options": {
-          "response": {
-            "response": {
-              "responseFormat": "text"
-            }
-          }
-        }
-      },
-      "id": "n14",
-      "name": "Fetch BUR Courses Page 2",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        3408,
-        0
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "function extractBurAbbrev(title){\n  const m=title.match(/\\(([^)]+)\\)(?=[^(]*$)/);\n  if(!m)return '';\n  const inner=m[1].trim();\n  const abbrevMatch=inner.match(/^([A-Z][A-Z0-9\\-]+)/);\n  return abbrevMatch?abbrevMatch[1]:'';\n}\nfunction parseBurDate(s){\n  if(!s)return '';\n  const m=s.match(/(\\d{2})\\.(\\d{2})\\.(\\d{4})/);\n  if(!m)return '';\n  return m[3]+'-'+m[2]+'-'+m[1];\n}\nconst html1=$('Fetch BUR Courses').first().json.data||'';\nconst html2=$input.first().json.data||'';\nconst html=html1+html2;\nconst courses=[];\nconst seen=new Set();\nconst cards=html.split(/data-key=\"\\d+\"/);\nfor(let i=1;i<cards.length;i++){\n  const card=cards[i];\n  const titleMatch=card.match(/<h3[^>]*>\\s*<a[^>]*>([^<]+)<\\/a>/);\n  const dateMatch=card.match(/flaticon-calendar[^<]*<\\/i>\\s*<span[^>]*>([^<]+)<\\/span>/);\n  const linkMatch=card.match(/href=\"(\\/wyszukiwarka\\/uslugi\\/\\d+[^\"]*|https:\\/\\/[^\"]+)\"/);\n  if(!titleMatch)continue;\n  const rawTitle=titleMatch[1].trim();\n  const rawDate=dateMatch?dateMatch[1].trim():'';\n  const abbrev=extractBurAbbrev(rawTitle);\n  if(!abbrev)continue;\n  const parsedDate=parseBurDate(rawDate);\n  const key=abbrev+'|'+parsedDate;\n  if(seen.has(key))continue;\n  seen.add(key);\n  const link=linkMatch?'https://uslugirozwojowe.parp.gov.pl'+linkMatch[1]:'';\n  courses.push({json:{source:'bur',rawTitle,abbrev,parsedDate,rawDate,link}});\n}\nif(courses.length===0)return [{json:{_empty:true,source:'bur'}}];\nreturn courses;"
+        "jsCode": "function extractBurAbbrev(title){\n  // Use last parenthesised group to find abbrev\n  const allParens=[...title.matchAll(/\\(([^)]+)\\)/g)];\n  if(!allParens.length)return '';\n  const inner=allParens[allParens.length-1][1].trim();\n  const abbrevMatch=inner.match(/^([A-Z][A-Z0-9\\-]+)/);\n  return abbrevMatch?abbrevMatch[1]:'';\n}\nfunction parseBurDate(s){\n  if(!s)return '';\n  const m=s.match(/(\\d{2})\\.(\\d{2})\\.(\\d{4})/);\n  if(!m)return '';\n  return m[3]+'-'+m[2]+'-'+m[1];\n}\nconst html=$('Fetch BUR Courses').first().json.data||'';\n// Extract total count shown on page: 'Znaleziono: X uslug'\nconst totalMatch=html.match(/Znaleziono:\\s*<strong>(\\d+)\\s*us[\\u0142l]ug<\\/strong>/);\nconst burTotal=totalMatch?parseInt(totalMatch[1],10):null;\nconst courses=[];\nconst seen=new Set();\nconst cards=html.split(/data-key=\"\\d+\"/);\nfor(let i=1;i<cards.length;i++){\n  const card=cards[i];\n  const titleMatch=card.match(/<h3[^>]*>\\s*<a[^>]*>([^<]+)<\\/a>/);\n  const dateMatch=card.match(/flaticon-calendar[^>]*>[^<]*<\\/i><span[^>]*>([^<]+)<\\/span>/);\n  const linkMatch=card.match(/href=\"(\\/wyszukiwarka\\/uslugi\\/[^\"]+)\"/);\n  if(!titleMatch)continue;\n  const rawTitle=titleMatch[1].trim();\n  const rawDate=dateMatch?dateMatch[1].trim():'';\n  const abbrev=extractBurAbbrev(rawTitle);\n  if(!abbrev)continue;\n  const parsedDate=parseBurDate(rawDate);\n  const key=abbrev+'|'+parsedDate;\n  if(seen.has(key))continue;\n  seen.add(key);\n  const link=linkMatch?'https://uslugirozwojowe.parp.gov.pl'+linkMatch[1]:'';\n  courses.push({json:{source:'bur',rawTitle,abbrev,parsedDate,rawDate,link,burTotal}});\n}\nif(courses.length===0)return [{json:{_empty:true,source:'bur',burTotal}}];\nreturn courses;"
       },
       "id": "n13",
       "name": "Parse BUR Courses",
@@ -263,7 +266,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const ABBREV_MAP = {'professional scrum master':'PSM','professional scrum master advanced':'PSM-A','professional scrum master ai essentials':'PSM-AI','professional scrum master - ai essentials':'PSM-AI','professional scrum product owner':'PSPO','professional scrum product owner advanced':'A-PSPO','professional scrum product owner - advanced':'A-PSPO','professional scrum product owner ai essentials':'PSPO-AI','professional scrum product owner - ai essentials':'PSPO-AI','applying professional scrum':'APS','professional scrum with kanban':'PSK','professional scrum facilitation skills':'PSFS','scaled professional scrum':'SPS','professional agile leadership essentials':'PAL-E','professional agile leadership - essentials':'PAL-E','professional agile leadership evidence-based management':'PAL-EBM','professional agile leadership - evidence-based management':'PAL-EBM','professional agile leadership - evidence based management':'PAL-EBM','professional scrum with user experience':'PSU'};\nconst ABBREV_ALIASES = {'PSM-AIE':'PSM-AI','PSPO-AIE':'PSPO-AI','PSPO AI':'PSPO-AI','PSM AI':'PSM-AI','PSPO-A':'A-PSPO'};\nfunction normalizeAbbrev(a) { if(!a) return ''; const t=a.trim(); return ABBREV_ALIASES[t]||t; }\nfunction extractQagileAbbrev(title) {\n  if (!title) return '';\n  const m=title.match(/[\\u2014\\u2013-]\\s*([A-Z][A-Z0-9\\-\\u2011]+)\\s*$/);\n  if (m) return normalizeAbbrev(m[1].replace(/\\u2011/g,'-'));\n  const lower=title.toLowerCase().replace(/[\\u2014\\u2013]/g,'-').trim();\n  for (const [name,abbrev] of Object.entries(ABBREV_MAP)) if (lower.includes(name)) return abbrev;\n  return title;\n}\nfunction extractOnlineAbbrev(title) {\n  if (!title) return '';\n  const withoutDate=title.replace(/\\s*-\\s*\\d{1,2}(?:-\\d{1,2})?\\.(\\d{1,2})\\.(\\d{4})\\s*$/,'').trim();\n  const lower=withoutDate.toLowerCase();\n  let bestMatch='',bestAbbrev='';\n  for (const [name,abbrev] of Object.entries(ABBREV_MAP)) {\n    if (lower===name&&name.length>bestMatch.length) { bestMatch=name; bestAbbrev=abbrev; }\n  }\n  if (bestAbbrev) return bestAbbrev;\n  for (const [name,abbrev] of Object.entries(ABBREV_MAP)) {\n    if (lower.includes(name)&&name.length>bestMatch.length) { bestMatch=name; bestAbbrev=abbrev; }\n  }\n  return bestAbbrev||withoutDate;\n}\nfunction parseOnlineDate(s) {\n  if (!s) return '';\n  const m=s.match(/(\\d{1,2})(?:-\\d{1,2})?\\.(\\d{1,2})\\.(\\d{4})/);\n  if (!m) return '';\n  return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');\n}\nconst outlook=$('Filter Course Events').all().map(i=>i.json).filter(i=>i.courseName!=='NO_COURSES_FOUND');\nconst qagileRaw=$('Parse qagile.pl Events').all().map(i=>i.json).filter(i=>i.courseName!=='NO_EVENTS_FOUND');\nconst onlineRaw=$('Parse online.qagile.pl Courses').all().map(i=>i.json).filter(i=>i.courseName!=='NO_COURSES_FOUND');\nconst scrumorgRaw=$('Parse scrum.org Courses').all().map(i=>i.json).filter(i=>!i._empty);\nconst burRaw=$('Parse BUR Courses').all().map(i=>i.json).filter(i=>!i._empty);\nconst qagile=qagileRaw.map(q=>({...q,abbrev:extractQagileAbbrev(q.originalTitle)}));\nconst online=onlineRaw.map(o=>({...o,abbrev:extractOnlineAbbrev(o.originalTitle),parsedDate:parseOnlineDate(o.courseDate)}));\nconst scrumorg=scrumorgRaw.map(s=>({...s,normalizedAbbrev:normalizeAbbrev(s.abbrev)}));\nconst bur=burRaw.map(b=>({...b,normalizedAbbrev:normalizeAbbrev(b.abbrev)}));\nconst audit=[];\nfor (const course of outlook) {\n  const outlookAbbrev=normalizeAbbrev(course.courseAbbrev||course.courseName);\n  const outlookStart=course.startDateShort||'';\n  const isEnglish=!!course.isEnglish;\n  const qagileMatch=qagile.find(q=>q.abbrev===outlookAbbrev&&q.startDate===outlookStart);\n  const onlineMatch=online.find(o=>o.abbrev===outlookAbbrev&&o.parsedDate===outlookStart);\n  const scrumorgMatch=scrumorg.find(s=>s.normalizedAbbrev===outlookAbbrev&&s.parsedDate===outlookStart);\n  const burMatch=isEnglish?null:bur.find(b=>b.normalizedAbbrev===outlookAbbrev&&b.parsedDate===outlookStart);\n  const burStatus=isEnglish?{status:'n/a'}:burMatch?{status:'found',title:burMatch.rawTitle,date:burMatch.rawDate,link:burMatch.link}:{status:'missing'};\n  audit.push({\n    courseAbbrev:outlookAbbrev,\n    outlookSubject:course.originalSubject,\n    outlookDate:outlookStart+' to '+(course.endDateShort||'?'),\n    isEnglish,\n    qagile:qagileMatch?{status:'found',title:qagileMatch.originalTitle,date:qagileMatch.startDate,link:qagileMatch.link}:{status:'missing'},\n    online:onlineMatch?{status:'found',title:onlineMatch.originalTitle,date:onlineMatch.courseDate}:{status:'missing'},\n    scrumorg:scrumorgMatch?{status:'found',title:scrumorgMatch.title,date:scrumorgMatch.rawDate}:{status:'missing'},\n    bur:burStatus\n  });\n}\nconst published=audit.filter(a=>a.qagile.status==='found'&&a.online.status==='found'&&a.scrumorg.status==='found'&&(a.bur.status==='found'||a.bur.status==='n/a'));\nconst missing=audit.filter(a=>a.qagile.status==='missing'||a.online.status==='missing'||a.scrumorg.status==='missing'||a.bur.status==='missing');\nreturn [{ json: { generatedAt:new Date().toISOString(), summary:{ totalOutlookCourses:outlook.length, totalQagileEvents:qagile.length, totalOnlineCourses:online.length, totalScrumorgCourses:scrumorg.length, totalBurCourses:bur.length, publishedEverywhere:published.length, missingOnSomePlatform:missing.length }, publishedEverywhere:published.map(a=>({course:a.courseAbbrev,date:a.outlookDate,isEnglish:a.isEnglish,qagile:a.qagile.title,online:a.online.title,scrumorg:a.scrumorg.title,bur:a.bur.status==='n/a'?'N/A (English)':a.bur.title})), missing:missing.map(a=>({course:a.courseAbbrev,date:a.outlookDate,isEnglish:a.isEnglish,qagile:a.qagile.status==='missing'?'NOT FOUND':a.qagile.title,online:a.online.status==='missing'?'NOT FOUND':a.online.title,scrumorg:a.scrumorg.status==='missing'?'NOT FOUND':a.scrumorg.title,bur:a.bur.status==='missing'?'NOT FOUND':a.bur.status==='n/a'?'N/A (English)':a.bur.title})), rawData:{outlook,qagile,online,scrumorg,bur} } }];"
+        "jsCode": "const ABBREV_MAP = {'professional scrum master':'PSM','professional scrum master advanced':'PSM-A','professional scrum master ai essentials':'PSM-AI','professional scrum master - ai essentials':'PSM-AI','professional scrum product owner':'PSPO','professional scrum product owner advanced':'A-PSPO','professional scrum product owner - advanced':'A-PSPO','professional scrum product owner ai essentials':'PSPO-AI','professional scrum product owner - ai essentials':'PSPO-AI','applying professional scrum':'APS','professional scrum with kanban':'PSK','professional scrum facilitation skills':'PSFS','scaled professional scrum':'SPS','professional agile leadership essentials':'PAL-E','professional agile leadership - essentials':'PAL-E','professional agile leadership evidence-based management':'PAL-EBM','professional agile leadership - evidence-based management':'PAL-EBM','professional agile leadership - evidence based management':'PAL-EBM','professional scrum with user experience':'PSU'};\nconst ABBREV_ALIASES = {'PSM-AIE':'PSM-AI','PSPO-AIE':'PSPO-AI','PSPO AI':'PSPO-AI','PSM AI':'PSM-AI','PSPO-A':'A-PSPO'};\nfunction normalizeAbbrev(a) { if(!a) return ''; const t=a.trim(); return ABBREV_ALIASES[t]||t; }\nfunction extractQagileAbbrev(title) {\n  if (!title) return '';\n  const m=title.match(/[\\u2014\\u2013-]\\s*([A-Z][A-Z0-9\\-\\u2011]+)\\s*$/);\n  if (m) return normalizeAbbrev(m[1].replace(/\\u2011/g,'-'));\n  const lower=title.toLowerCase().replace(/[\\u2014\\u2013]/g,'-').trim();\n  for (const [name,abbrev] of Object.entries(ABBREV_MAP)) if (lower.includes(name)) return abbrev;\n  return title;\n}\nfunction extractOnlineAbbrev(title) {\n  if (!title) return '';\n  const withoutDate=title.replace(/\\s*-\\s*\\d{1,2}(?:-\\d{1,2})?\\.(\\d{1,2})\\.(\\d{4})\\s*$/,'').trim();\n  const lower=withoutDate.toLowerCase();\n  let bestMatch='',bestAbbrev='';\n  for (const [name,abbrev] of Object.entries(ABBREV_MAP)) {\n    if (lower===name&&name.length>bestMatch.length) { bestMatch=name; bestAbbrev=abbrev; }\n  }\n  if (bestAbbrev) return bestAbbrev;\n  for (const [name,abbrev] of Object.entries(ABBREV_MAP)) {\n    if (lower.includes(name)&&name.length>bestMatch.length) { bestMatch=name; bestAbbrev=abbrev; }\n  }\n  return bestAbbrev||withoutDate;\n}\nfunction parseOnlineDate(s) {\n  if (!s) return '';\n  const m=s.match(/(\\d{1,2})(?:-\\d{1,2})?\\.(\\d{1,2})\\.(\\d{4})/);\n  if (!m) return '';\n  return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');\n}\nconst outlook=$('Filter Course Events').all().map(i=>i.json).filter(i=>i.courseName!=='NO_COURSES_FOUND');\nconst qagileRaw=$('Parse qagile.pl Events').all().map(i=>i.json).filter(i=>i.courseName!=='NO_EVENTS_FOUND');\nconst onlineRaw=$('Parse online.qagile.pl Courses').all().map(i=>i.json).filter(i=>i.courseName!=='NO_COURSES_FOUND');\nconst scrumorgRaw=$('Parse scrum.org Courses').all().map(i=>i.json).filter(i=>!i._empty);\nconst burRaw=$('Parse BUR Courses').all().map(i=>i.json).filter(i=>!i._empty);\nconst qagile=qagileRaw.map(q=>({...q,abbrev:extractQagileAbbrev(q.originalTitle)}));\nconst online=onlineRaw.map(o=>({...o,abbrev:extractOnlineAbbrev(o.originalTitle),parsedDate:parseOnlineDate(o.courseDate)}));\nconst scrumorg=scrumorgRaw.map(s=>({...s,normalizedAbbrev:normalizeAbbrev(s.abbrev)}));\nconst bur=burRaw.map(b=>({...b,normalizedAbbrev:normalizeAbbrev(b.abbrev)}));\nconst audit=[];\nfor (const course of outlook) {\n  const outlookAbbrev=normalizeAbbrev(course.courseAbbrev||course.courseName);\n  const outlookStart=course.startDateShort||'';\n  const isEnglish=!!course.isEnglish;\n  const qagileMatch=qagile.find(q=>q.abbrev===outlookAbbrev&&q.startDate===outlookStart);\n  const onlineMatch=online.find(o=>o.abbrev===outlookAbbrev&&o.parsedDate===outlookStart);\n  const scrumorgMatch=scrumorg.find(s=>s.normalizedAbbrev===outlookAbbrev&&s.parsedDate===outlookStart);\n  const burMatch=isEnglish?null:bur.find(b=>b.normalizedAbbrev===outlookAbbrev);\n  const burStatus=isEnglish?{status:'n/a'}:burMatch?{status:'found',title:burMatch.rawTitle,date:burMatch.rawDate,link:burMatch.link}:{status:'missing'};\n  audit.push({\n    courseAbbrev:outlookAbbrev,\n    outlookSubject:course.originalSubject,\n    outlookDate:outlookStart+' to '+(course.endDateShort||'?'),\n    isEnglish,\n    qagile:qagileMatch?{status:'found',title:qagileMatch.originalTitle,date:qagileMatch.startDate,link:qagileMatch.link}:{status:'missing'},\n    online:onlineMatch?{status:'found',title:onlineMatch.originalTitle,date:onlineMatch.courseDate}:{status:'missing'},\n    scrumorg:scrumorgMatch?{status:'found',title:scrumorgMatch.title,date:scrumorgMatch.rawDate}:{status:'missing'},\n    bur:burStatus\n  });\n}\nconst published=audit.filter(a=>a.qagile.status==='found'&&a.online.status==='found'&&a.scrumorg.status==='found'&&(a.bur.status==='found'||a.bur.status==='n/a'));\nconst missing=audit.filter(a=>a.qagile.status==='missing'||a.online.status==='missing'||a.scrumorg.status==='missing'||a.bur.status==='missing');\nconst burTotal=bur.length>0&&bur[0].burTotal!=null?bur[0].burTotal:null;\nreturn [{ json: { generatedAt:new Date().toISOString(), summary:{ totalOutlookCourses:outlook.length, totalQagileEvents:qagile.length, totalOnlineCourses:online.length, totalScrumorgCourses:scrumorg.length, totalBurCourses:bur.length, burTotalFromPage:burTotal, publishedEverywhere:published.length, missingOnSomePlatform:missing.length }, published:published.map(a=>({course:a.courseAbbrev,date:a.outlookDate.substring(0,10),isEnglish:a.isEnglish})).sort((a,b)=>a.date.localeCompare(b.date)), publishedEverywhere:published.map(a=>({course:a.courseAbbrev,date:a.outlookDate,isEnglish:a.isEnglish,qagile:a.qagile.title,online:a.online.title,scrumorg:a.scrumorg.title,bur:a.bur.status==='n/a'?'N/A (English)':a.bur.title})), missing:missing.map(a=>({course:a.courseAbbrev,date:a.outlookDate,isEnglish:a.isEnglish,qagile:a.qagile.status==='missing'?'NOT FOUND':a.qagile.title,online:a.online.status==='missing'?'NOT FOUND':a.online.title,scrumorg:a.scrumorg.status==='missing'?'NOT FOUND':a.scrumorg.title,bur:a.bur.status==='missing'?'NOT FOUND':a.bur.status==='n/a'?'N/A (English)':a.bur.title})), rawData:{outlook,qagile,online,scrumorg,bur} } }];"
       },
       "id": "n9",
       "name": "Build Audit Report",
@@ -293,7 +296,7 @@
           "value": "#qagile-bot",
           "mode": "name"
         },
-        "text": "=  =\u2705 *Course Audit* \u2014 {{ $json.generatedAt.substring(0,10) }}                                                                        *Published everywhere:* {{ $json.summary.publishedEverywhere }}/{{ $json.summary.totalOutlookCourses }}                                                                                                                                                                 {{ $json.missing.length === 0 ? '\ud83c\udf89 All courses published!' : '\u26a0\ufe0f  *Missing (' + $json.missing.length + '):*\\n' +                    $json.missing.map(m => '\u2022 *' + m.course + '* ' + m.date.substring(0,10) + (m.isEnglish ? ' [ENG]' : '') + ' \u2014 qagile.pl:' +         (m.qagile === 'NOT FOUND' ? '\u274c' : '\u2705') + ' online:' + (m.online === 'NOT FOUND' ? '\u274c' : '\u2705') + ' scrum.org:' + (m.scrumorg      === 'NOT FOUND' ? '\u274c' : '\u2705') + ' BUR:' + (m.bur === 'NOT FOUND' ? '\u274c' : m.bur === 'N/A (English)' ? 'N/A' : '\u2705')).join('\\n')    }}   ",
+        "text": "= =\u2705 *Course Audit* \u2014 {{ $json.generatedAt.substring(0,10) }}\n\n*Published everywhere:* {{ $json.summary.publishedEverywhere }}/{{ $json.summary.totalOutlookCourses }}\nqagile.pl: {{ $json.summary.totalQagileEvents }} | online: {{ $json.summary.totalOnlineCourses }} | scrum.org: {{ $json.summary.totalScrumorgCourses }} | BUR: {{ $json.summary.totalBurCourses }}/{{ $json.summary.burTotalFromPage !== null ? $json.summary.burTotalFromPage : '?' }}\n\n*\ud83d\udcda Published ({{ $json.published.length }}):*\n{{ $json.published.map(p => p.course + ' \u2014 ' + p.date + (p.isEnglish ? ' [ENG]' : '')).join('\\n') }}\n\n{{ $json.missing.length === 0 ? '\ud83c\udf89 All courses published everywhere!' : '\u26a0\ufe0f  *Missing (' + $json.missing.length + '):*\\n' + $json.missing.map(m => '\u2022 *' + m.course + '* ' + m.date.substring(0,10) + (m.isEnglish ? ' [ENG]' : '') + ' \u2014 qagile.pl:' + (m.qagile === 'NOT FOUND' ? '\u274c' : '\u2705') + ' online:' + (m.online === 'NOT FOUND' ? '\u274c' : '\u2705') + ' scrum.org:' + (m.scrumorg === 'NOT FOUND' ? '\u274c' : '\u2705') + ' BUR:' + (m.bur === 'NOT FOUND' ? '\u274c' : m.bur === 'N/A (English)' ? 'N/A' : '\u2705')).join('\\n') }}",
         "otherOptions": {}
       },
       "id": "n15",
@@ -309,6 +312,31 @@
         "slackApi": {
           "id": "ccYfDE6Yak5Wvc5U",
           "name": "Slack account"
+        }
+      }
+    },
+    {
+      "id": "83c0bfbd-9475-4e7f-bff1-71ece34feb46",
+      "name": "Fetch online.qagile.pl Listing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1600,
+        160
+      ],
+      "parameters": {
+        "url": "https://online.qagile.pl/page/2",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          },
+          "redirect": {
+            "redirect": {
+              "followRedirects": true
+            }
+          }
         }
       }
     }
@@ -391,17 +419,6 @@
         ]
       ]
     },
-    "Fetch online.qagile.pl Courses": {
-      "main": [
-        [
-          {
-            "node": "Parse online.qagile.pl Courses",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Parse online.qagile.pl Courses": {
       "main": [
         [
@@ -436,17 +453,6 @@
       ]
     },
     "Fetch BUR Courses": {
-      "main": [
-        [
-          {
-            "node": "Fetch BUR Courses Page 2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Fetch BUR Courses Page 2": {
       "main": [
         [
           {
@@ -489,6 +495,28 @@
           }
         ]
       ]
+    },
+    "Fetch online.qagile.pl Courses": {
+      "main": [
+        [
+          {
+            "node": "Fetch online.qagile.pl Listing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch online.qagile.pl Listing": {
+      "main": [
+        [
+          {
+            "node": "Parse online.qagile.pl Courses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -502,5 +530,572 @@
     "availableInMCP": false,
     "executionOrder": "v1"
   },
-  "staticData": null
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "94460501-39a3-4bca-89dc-d43315da2025",
+  "activeVersionId": "94460501-39a3-4bca-89dc-d43315da2025",
+  "versionCounter": 140,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-04-03T21:03:32.112Z",
+      "createdAt": "2026-04-03T21:03:32.112Z",
+      "role": "workflow:owner",
+      "workflowId": "1MLHq9gEDw5lD8Y7",
+      "projectId": "BgKOdyk040DxPHte",
+      "project": {
+        "updatedAt": "2025-09-08T23:44:44.373Z",
+        "createdAt": "2025-09-08T16:48:28.019Z",
+        "id": "BgKOdyk040DxPHte",
+        "name": "Krystian Kaczor <krystian.kaczor@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "d20c49d1-e72b-4b77-8ef9-db89288460b0"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-04-09T14:02:57.561Z",
+    "createdAt": "2026-04-09T14:02:57.561Z",
+    "versionId": "94460501-39a3-4bca-89dc-d43315da2025",
+    "workflowId": "1MLHq9gEDw5lD8Y7",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "course-audit",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "n1",
+        "name": "Webhook Trigger",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -800,
+          0
+        ],
+        "webhookId": "55ec2451-e5a6-4b45-a2e6-97b661e71075"
+      },
+      {
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "Running course audit... results will appear in #qagile-bot shortly.",
+          "options": {
+            "responseCode": 200
+          }
+        },
+        "id": "n16",
+        "name": "Respond to Slack",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          -608,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "resource": "event",
+          "fromAllCalendars": false,
+          "calendarId": {
+            "__rl": true,
+            "value": "AQMkAGY5ZmMxZjc3AC01MmJmLTQ1M2UtOWI5Mi1kYjVmNDAyNDY1ZjkARgAAA05J_jDlGsRBpxqG0H0FBBUHAHMz8TFmvohCmiMxcCocCIQAAAIBBgAAAHMz8TFmvohCmiMxcCocCIQAAXxjHAAAAQ==",
+            "mode": "list",
+            "cachedResultName": "QAgile Shared"
+          },
+          "returnAll": true,
+          "output": "fields",
+          "fields": [
+            "body",
+            "start",
+            "end",
+            "subject"
+          ],
+          "filters": {
+            "custom": "=  start/dateTime ge '{{ $now.toISO() }}' and start/dateTime le '{{ $now.plus(3, 'months').toISO() }}'                              "
+          }
+        },
+        "id": "n2",
+        "name": "Get Outlook Calendar Events",
+        "type": "n8n-nodes-base.microsoftOutlook",
+        "typeVersion": 2,
+        "position": [
+          -400,
+          0
+        ],
+        "webhookId": "fae8b95d-694e-4b6d-8f7c-04bafc0e25d4",
+        "credentials": {
+          "microsoftOutlookOAuth2Api": {
+            "id": "q4KrO58AZ1g2xStp",
+            "name": "Microsoft Outlook account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\nconst courses = [];\nfor (const item of items) {\n  const subject = (item.json.subject || '').trim();\n  if (!subject) continue;\n  const abbrevMatch = subject.match(/^([A-Z][A-Z0-9\\-]+(?:\\s+AI)?)\\s+(?:Open|Closed|In-house|-)/i);\n  if (!abbrevMatch) continue;\n  const courseAbbrev = abbrevMatch[1].trim();\n  const parts = subject.split(' - ').map(p => p.trim());\n  const isEnglish = /\\bENG\\b|\\bFOSS\\b|\\bEnglish\\b/i.test(subject);\n  courses.push({ json: {\n    source: 'outlook', courseAbbrev, courseName: courseAbbrev,\n    originalSubject: subject, isEnglish,\n    startDate: item.json.start?.dateTime || null,\n    endDate: item.json.end?.dateTime || null,\n    startDateShort: item.json.start?.dateTime ? item.json.start.dateTime.substring(0,10) : null,\n    endDateShort: item.json.end?.dateTime ? item.json.end.dateTime.substring(0,10) : null,\n    location: parts.length>=2 ? parts[parts.length-2] : null,\n    trainer: parts.length>=2 ? parts[parts.length-1] : null\n  }});\n}\nif (courses.length === 0) return [{ json: { source: 'outlook', courseName: 'NO_COURSES_FOUND', startDate: null } }];\nreturn courses;"
+        },
+        "id": "n3",
+        "name": "Filter Course Events",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://www.qagile.pl/kalendarz-szkolenia-scrum-agile/",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "text"
+              }
+            }
+          }
+        },
+        "id": "n4",
+        "name": "Fetch qagile.pl Events",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          400,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "extractHtmlContent",
+          "extractionValues": {
+            "values": [
+              {
+                "key": "html",
+                "cssSelector": "body",
+                "returnValue": "html"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "n5",
+        "name": "Extract Events HTML",
+        "type": "n8n-nodes-base.html",
+        "typeVersion": 1.2,
+        "position": [
+          800,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const html = $input.first().json.html || '';\nconst events = [];\nconst blocks = html.split('upcoming-trainings-widget-item\"');\nfor (let i=1; i<blocks.length; i++) {\n  const block = blocks[i];\n  const titleMatch = block.match(/em-item-title[^>]*><a[^>]+>([^<]+)<\\/a>/);\n  const dateMatch = block.match(/em-event-date[^\"]*\"[^>]*>[\\s\\S]*?(\\d{2}\\/\\d{2}\\/\\d{4})/);\n  const linkMatch = block.match(/data-href=\"([^\"]+)\"/);\n  if (!titleMatch || !dateMatch) continue;\n  const rawTitle = titleMatch[1].replace(/&nbsp;/g, ' ').replace(/\\s+/g, ' ').trim();\n  const parts = dateMatch[1].split('/');\n  const startDate = parts[2] + '-' + parts[1] + '-' + parts[0];\n  events.push({json:{source:'qagile',originalTitle:rawTitle,courseName:rawTitle,startDate,link:linkMatch?linkMatch[1]:''}});\n}\nif (events.length===0) return [{json:{source:'qagile',courseName:'NO_EVENTS_FOUND',startDate:null}}];\nreturn events;"
+        },
+        "id": "n6",
+        "name": "Parse qagile.pl Events",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1200,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://online.qagile.pl",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "text"
+              }
+            }
+          }
+        },
+        "id": "n7",
+        "name": "Fetch online.qagile.pl Courses",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1600,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// Merge products from homepage (PSM-AI, APS etc) and listing page (PSFS etc)\n// Merge homepage (has PSM-AI, APS etc) and listing page (has PSFS)\nconst htmlHome = $('Fetch online.qagile.pl Courses').first().json.data || '';\nconst htmlListing = $input.first().json.data || '';\nconst html = htmlHome + htmlListing;\nconst results = [];\nconst seen = new Set();\nconst productPattern = /data-gtm-product-name\\[\\d+\\]='([^']+)'/g;\nlet match;\nwhile ((match = productPattern.exec(html)) !== null) {\n  const fullName = match[1];\n  if (seen.has(fullName)) continue;\n  seen.add(fullName);\n  const dateMatch = fullName.match(/\\s*-\\s*(\\d{1,2}(?:-\\d{1,2})?\\.(\\d{1,2})\\.(\\d{4}))\\s*$/);\n  let courseName = fullName, courseDate = null;\n  if (dateMatch) {\n    courseDate = dateMatch[1];\n    courseName = fullName.substring(0, fullName.lastIndexOf(dateMatch[0])).trim();\n  }\n  results.push({ json: { source: 'online', courseName, originalTitle: fullName, courseDate } });\n}\nif (results.length === 0) return [{ json: { source: 'online', courseName: 'NO_COURSES_FOUND', courseDate: null } }];\nreturn results;"
+        },
+        "id": "n8",
+        "name": "Parse online.qagile.pl Courses",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2000,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://www.scrum.org/partners/qagile",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "text"
+              }
+            }
+          }
+        },
+        "id": "n10",
+        "name": "Fetch scrum.org Courses",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2400,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const html = $input.first().json.data || '';\nconst ABBREV_MAP = {'professional scrum master':'PSM','professional scrum master - advanced':'PSM-A','professional scrum product owner':'PSPO','professional scrum product owner - advanced':'PSPO-A','applying professional scrum':'APS','professional agile leadership - essentials':'PAL-E','professional agile leadership essentials':'PAL-E','professional agile leadership - evidence based management':'PAL-EBM','professional agile leadership - evidence-based management':'PAL-EBM','scaled professional scrum':'SPS','professional scrum with kanban':'PSK','professional scrum with user experience':'PSU','professional scrum facilitation skills':'PSFS','professional scrum master - ai essentials':'PSM-AI','professional scrum product owner - ai essentials':'PSPO-AI','professional scrum master ai essentials':'PSM-AI','professional scrum product owner ai essentials':'PSPO-AI'};\nconst ABBREV_ALIASES = {'PSPO-A':'A-PSPO'};\nconst months = {jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};\nfunction normalizeAbbrev(raw) {\n  const lower=(raw||'').toLowerCase().trim();\n  let bestLen=0, bestAbbrev=null;\n  for (const [k,v] of Object.entries(ABBREV_MAP)) {\n    if (lower.includes(k) && k.length>bestLen) { bestLen=k.length; bestAbbrev=v; }\n  }\n  if (bestAbbrev) return ABBREV_ALIASES[bestAbbrev]||bestAbbrev;\n  const up=(raw||'').toUpperCase().trim();\n  return ABBREV_ALIASES[up]||up;\n}\nfunction parseDate(s) {\n  if (!s) return null;\n  const m=s.trim().match(/(\\w+)\\s+(\\d+)(?:-\\d+)?[,\\s]+(\\d{4})/);\n  if (!m) return null;\n  const mon=months[m[1].toLowerCase().slice(0,3)];\n  if (!mon) return null;\n  return `${m[3]}-${String(mon).padStart(2,'0')}-${String(parseInt(m[2],10)).padStart(2,'0')}`;\n}\nconst results = [];\nconst cards = html.split('class=\"card card-shadow-border');\nfor (let i=1; i<cards.length; i++) {\n  const card = cards[i];\n  const titleMatch = card.match(/<div[^>]*class=\"[^\"]*pt-2 text-dark[^\"]*\"[^>]*>\\s*<a[^>]*>([^<]+)<\\/a>/);\n  if (!titleMatch) continue;\n  const rawTitle = titleMatch[1].replace(/\\s+/g,' ').trim();\n  const dateMatch = card.match(/Date:<\\/span>\\s*<span[^>]*>([^<]+)<\\/span>/);\n  const rawDate = dateMatch ? dateMatch[1].trim() : '';\n  const isOnline = /live virtual|online/i.test(card);\n  results.push({ json: { title:rawTitle, abbrev:normalizeAbbrev(rawTitle), rawDate, parsedDate:parseDate(rawDate), isOnline } });\n}\nif (results.length===0) return [{ json: { _empty:true, message:'No scrum.org courses found', htmlSnippet:html.substring(0,500) } }];\nreturn results;"
+        },
+        "id": "n11",
+        "name": "Parse scrum.org Courses",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2800,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://uslugirozwojowe.parp.gov.pl/wyszukiwarka/uslugi/szukaj?dostawcyUslug%5B%5D=135453&wynikiNaStronie=100",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "text"
+              }
+            }
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "User-Agent",
+                "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+              },
+              {
+                "name": "Accept-Language",
+                "value": "pl-PL,pl;q=0.9,en;q=0.8"
+              },
+              {
+                "name": "Accept",
+                "value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+              }
+            ]
+          }
+        },
+        "id": "n12",
+        "name": "Fetch BUR Courses",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          3200,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "function extractBurAbbrev(title){\n  // Use last parenthesised group to find abbrev\n  const allParens=[...title.matchAll(/\\(([^)]+)\\)/g)];\n  if(!allParens.length)return '';\n  const inner=allParens[allParens.length-1][1].trim();\n  const abbrevMatch=inner.match(/^([A-Z][A-Z0-9\\-]+)/);\n  return abbrevMatch?abbrevMatch[1]:'';\n}\nfunction parseBurDate(s){\n  if(!s)return '';\n  const m=s.match(/(\\d{2})\\.(\\d{2})\\.(\\d{4})/);\n  if(!m)return '';\n  return m[3]+'-'+m[2]+'-'+m[1];\n}\nconst html=$('Fetch BUR Courses').first().json.data||'';\n// Extract total count shown on page: 'Znaleziono: X uslug'\nconst totalMatch=html.match(/Znaleziono:\\s*<strong>(\\d+)\\s*us[\\u0142l]ug<\\/strong>/);\nconst burTotal=totalMatch?parseInt(totalMatch[1],10):null;\nconst courses=[];\nconst seen=new Set();\nconst cards=html.split(/data-key=\"\\d+\"/);\nfor(let i=1;i<cards.length;i++){\n  const card=cards[i];\n  const titleMatch=card.match(/<h3[^>]*>\\s*<a[^>]*>([^<]+)<\\/a>/);\n  const dateMatch=card.match(/flaticon-calendar[^>]*>[^<]*<\\/i><span[^>]*>([^<]+)<\\/span>/);\n  const linkMatch=card.match(/href=\"(\\/wyszukiwarka\\/uslugi\\/[^\"]+)\"/);\n  if(!titleMatch)continue;\n  const rawTitle=titleMatch[1].trim();\n  const rawDate=dateMatch?dateMatch[1].trim():'';\n  const abbrev=extractBurAbbrev(rawTitle);\n  if(!abbrev)continue;\n  const parsedDate=parseBurDate(rawDate);\n  const key=abbrev+'|'+parsedDate;\n  if(seen.has(key))continue;\n  seen.add(key);\n  const link=linkMatch?'https://uslugirozwojowe.parp.gov.pl'+linkMatch[1]:'';\n  courses.push({json:{source:'bur',rawTitle,abbrev,parsedDate,rawDate,link,burTotal}});\n}\nif(courses.length===0)return [{json:{_empty:true,source:'bur',burTotal}}];\nreturn courses;"
+        },
+        "id": "n13",
+        "name": "Parse BUR Courses",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3600,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const ABBREV_MAP = {'professional scrum master':'PSM','professional scrum master advanced':'PSM-A','professional scrum master ai essentials':'PSM-AI','professional scrum master - ai essentials':'PSM-AI','professional scrum product owner':'PSPO','professional scrum product owner advanced':'A-PSPO','professional scrum product owner - advanced':'A-PSPO','professional scrum product owner ai essentials':'PSPO-AI','professional scrum product owner - ai essentials':'PSPO-AI','applying professional scrum':'APS','professional scrum with kanban':'PSK','professional scrum facilitation skills':'PSFS','scaled professional scrum':'SPS','professional agile leadership essentials':'PAL-E','professional agile leadership - essentials':'PAL-E','professional agile leadership evidence-based management':'PAL-EBM','professional agile leadership - evidence-based management':'PAL-EBM','professional agile leadership - evidence based management':'PAL-EBM','professional scrum with user experience':'PSU'};\nconst ABBREV_ALIASES = {'PSM-AIE':'PSM-AI','PSPO-AIE':'PSPO-AI','PSPO AI':'PSPO-AI','PSM AI':'PSM-AI','PSPO-A':'A-PSPO'};\nfunction normalizeAbbrev(a) { if(!a) return ''; const t=a.trim(); return ABBREV_ALIASES[t]||t; }\nfunction extractQagileAbbrev(title) {\n  if (!title) return '';\n  const m=title.match(/[\\u2014\\u2013-]\\s*([A-Z][A-Z0-9\\-\\u2011]+)\\s*$/);\n  if (m) return normalizeAbbrev(m[1].replace(/\\u2011/g,'-'));\n  const lower=title.toLowerCase().replace(/[\\u2014\\u2013]/g,'-').trim();\n  for (const [name,abbrev] of Object.entries(ABBREV_MAP)) if (lower.includes(name)) return abbrev;\n  return title;\n}\nfunction extractOnlineAbbrev(title) {\n  if (!title) return '';\n  const withoutDate=title.replace(/\\s*-\\s*\\d{1,2}(?:-\\d{1,2})?\\.(\\d{1,2})\\.(\\d{4})\\s*$/,'').trim();\n  const lower=withoutDate.toLowerCase();\n  let bestMatch='',bestAbbrev='';\n  for (const [name,abbrev] of Object.entries(ABBREV_MAP)) {\n    if (lower===name&&name.length>bestMatch.length) { bestMatch=name; bestAbbrev=abbrev; }\n  }\n  if (bestAbbrev) return bestAbbrev;\n  for (const [name,abbrev] of Object.entries(ABBREV_MAP)) {\n    if (lower.includes(name)&&name.length>bestMatch.length) { bestMatch=name; bestAbbrev=abbrev; }\n  }\n  return bestAbbrev||withoutDate;\n}\nfunction parseOnlineDate(s) {\n  if (!s) return '';\n  const m=s.match(/(\\d{1,2})(?:-\\d{1,2})?\\.(\\d{1,2})\\.(\\d{4})/);\n  if (!m) return '';\n  return m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0');\n}\nconst outlook=$('Filter Course Events').all().map(i=>i.json).filter(i=>i.courseName!=='NO_COURSES_FOUND');\nconst qagileRaw=$('Parse qagile.pl Events').all().map(i=>i.json).filter(i=>i.courseName!=='NO_EVENTS_FOUND');\nconst onlineRaw=$('Parse online.qagile.pl Courses').all().map(i=>i.json).filter(i=>i.courseName!=='NO_COURSES_FOUND');\nconst scrumorgRaw=$('Parse scrum.org Courses').all().map(i=>i.json).filter(i=>!i._empty);\nconst burRaw=$('Parse BUR Courses').all().map(i=>i.json).filter(i=>!i._empty);\nconst qagile=qagileRaw.map(q=>({...q,abbrev:extractQagileAbbrev(q.originalTitle)}));\nconst online=onlineRaw.map(o=>({...o,abbrev:extractOnlineAbbrev(o.originalTitle),parsedDate:parseOnlineDate(o.courseDate)}));\nconst scrumorg=scrumorgRaw.map(s=>({...s,normalizedAbbrev:normalizeAbbrev(s.abbrev)}));\nconst bur=burRaw.map(b=>({...b,normalizedAbbrev:normalizeAbbrev(b.abbrev)}));\nconst audit=[];\nfor (const course of outlook) {\n  const outlookAbbrev=normalizeAbbrev(course.courseAbbrev||course.courseName);\n  const outlookStart=course.startDateShort||'';\n  const isEnglish=!!course.isEnglish;\n  const qagileMatch=qagile.find(q=>q.abbrev===outlookAbbrev&&q.startDate===outlookStart);\n  const onlineMatch=online.find(o=>o.abbrev===outlookAbbrev&&o.parsedDate===outlookStart);\n  const scrumorgMatch=scrumorg.find(s=>s.normalizedAbbrev===outlookAbbrev&&s.parsedDate===outlookStart);\n  const burMatch=isEnglish?null:bur.find(b=>b.normalizedAbbrev===outlookAbbrev);\n  const burStatus=isEnglish?{status:'n/a'}:burMatch?{status:'found',title:burMatch.rawTitle,date:burMatch.rawDate,link:burMatch.link}:{status:'missing'};\n  audit.push({\n    courseAbbrev:outlookAbbrev,\n    outlookSubject:course.originalSubject,\n    outlookDate:outlookStart+' to '+(course.endDateShort||'?'),\n    isEnglish,\n    qagile:qagileMatch?{status:'found',title:qagileMatch.originalTitle,date:qagileMatch.startDate,link:qagileMatch.link}:{status:'missing'},\n    online:onlineMatch?{status:'found',title:onlineMatch.originalTitle,date:onlineMatch.courseDate}:{status:'missing'},\n    scrumorg:scrumorgMatch?{status:'found',title:scrumorgMatch.title,date:scrumorgMatch.rawDate}:{status:'missing'},\n    bur:burStatus\n  });\n}\nconst published=audit.filter(a=>a.qagile.status==='found'&&a.online.status==='found'&&a.scrumorg.status==='found'&&(a.bur.status==='found'||a.bur.status==='n/a'));\nconst missing=audit.filter(a=>a.qagile.status==='missing'||a.online.status==='missing'||a.scrumorg.status==='missing'||a.bur.status==='missing');\nconst burTotal=bur.length>0&&bur[0].burTotal!=null?bur[0].burTotal:null;\nreturn [{ json: { generatedAt:new Date().toISOString(), summary:{ totalOutlookCourses:outlook.length, totalQagileEvents:qagile.length, totalOnlineCourses:online.length, totalScrumorgCourses:scrumorg.length, totalBurCourses:bur.length, burTotalFromPage:burTotal, publishedEverywhere:published.length, missingOnSomePlatform:missing.length }, published:published.map(a=>({course:a.courseAbbrev,date:a.outlookDate.substring(0,10),isEnglish:a.isEnglish})).sort((a,b)=>a.date.localeCompare(b.date)), publishedEverywhere:published.map(a=>({course:a.courseAbbrev,date:a.outlookDate,isEnglish:a.isEnglish,qagile:a.qagile.title,online:a.online.title,scrumorg:a.scrumorg.title,bur:a.bur.status==='n/a'?'N/A (English)':a.bur.title})), missing:missing.map(a=>({course:a.courseAbbrev,date:a.outlookDate,isEnglish:a.isEnglish,qagile:a.qagile.status==='missing'?'NOT FOUND':a.qagile.title,online:a.online.status==='missing'?'NOT FOUND':a.online.title,scrumorg:a.scrumorg.status==='missing'?'NOT FOUND':a.scrumorg.title,bur:a.bur.status==='missing'?'NOT FOUND':a.bur.status==='n/a'?'N/A (English)':a.bur.title})), rawData:{outlook,qagile,online,scrumorg,bur} } }];"
+        },
+        "id": "n9",
+        "name": "Build Audit Report",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          4000,
+          0
+        ]
+      },
+      {
+        "parameters": {},
+        "id": "6e0adf03-0ed3-4511-875e-05bc1e5af0f8",
+        "name": "When clicking 'Execute workflow'",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          -720,
+          -336
+        ]
+      },
+      {
+        "parameters": {
+          "select": "channel",
+          "channelId": {
+            "__rl": true,
+            "value": "#qagile-bot",
+            "mode": "name"
+          },
+          "text": "= =\u2705 *Course Audit* \u2014 {{ $json.generatedAt.substring(0,10) }}\n\n*Published everywhere:* {{ $json.summary.publishedEverywhere }}/{{ $json.summary.totalOutlookCourses }}\nqagile.pl: {{ $json.summary.totalQagileEvents }} | online: {{ $json.summary.totalOnlineCourses }} | scrum.org: {{ $json.summary.totalScrumorgCourses }} | BUR: {{ $json.summary.totalBurCourses }}/{{ $json.summary.burTotalFromPage !== null ? $json.summary.burTotalFromPage : '?' }}\n\n*\ud83d\udcda Published ({{ $json.published.length }}):*\n{{ $json.published.map(p => p.course + ' \u2014 ' + p.date + (p.isEnglish ? ' [ENG]' : '')).join('\\n') }}\n\n{{ $json.missing.length === 0 ? '\ud83c\udf89 All courses published everywhere!' : '\u26a0\ufe0f  *Missing (' + $json.missing.length + '):*\\n' + $json.missing.map(m => '\u2022 *' + m.course + '* ' + m.date.substring(0,10) + (m.isEnglish ? ' [ENG]' : '') + ' \u2014 qagile.pl:' + (m.qagile === 'NOT FOUND' ? '\u274c' : '\u2705') + ' online:' + (m.online === 'NOT FOUND' ? '\u274c' : '\u2705') + ' scrum.org:' + (m.scrumorg === 'NOT FOUND' ? '\u274c' : '\u2705') + ' BUR:' + (m.bur === 'NOT FOUND' ? '\u274c' : m.bur === 'N/A (English)' ? 'N/A' : '\u2705')).join('\\n') }}",
+          "otherOptions": {}
+        },
+        "id": "n15",
+        "name": "Post to Slack",
+        "type": "n8n-nodes-base.slack",
+        "typeVersion": 2.4,
+        "position": [
+          4400,
+          0
+        ],
+        "webhookId": "4bc5e5e6-35e2-4d6a-83f5-07e8e2f9eef5",
+        "credentials": {
+          "slackApi": {
+            "id": "ccYfDE6Yak5Wvc5U",
+            "name": "Slack account"
+          }
+        }
+      },
+      {
+        "id": "83c0bfbd-9475-4e7f-bff1-71ece34feb46",
+        "name": "Fetch online.qagile.pl Listing",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1600,
+          160
+        ],
+        "parameters": {
+          "url": "https://online.qagile.pl/page/2",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "text"
+              }
+            },
+            "redirect": {
+              "redirect": {
+                "followRedirects": true
+              }
+            }
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook Trigger": {
+        "main": [
+          [
+            {
+              "node": "Respond to Slack",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Respond to Slack": {
+        "main": [
+          [
+            {
+              "node": "Get Outlook Calendar Events",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Outlook Calendar Events": {
+        "main": [
+          [
+            {
+              "node": "Filter Course Events",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter Course Events": {
+        "main": [
+          [
+            {
+              "node": "Fetch qagile.pl Events",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch qagile.pl Events": {
+        "main": [
+          [
+            {
+              "node": "Extract Events HTML",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract Events HTML": {
+        "main": [
+          [
+            {
+              "node": "Parse qagile.pl Events",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse qagile.pl Events": {
+        "main": [
+          [
+            {
+              "node": "Fetch online.qagile.pl Courses",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse online.qagile.pl Courses": {
+        "main": [
+          [
+            {
+              "node": "Fetch scrum.org Courses",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch scrum.org Courses": {
+        "main": [
+          [
+            {
+              "node": "Parse scrum.org Courses",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse scrum.org Courses": {
+        "main": [
+          [
+            {
+              "node": "Fetch BUR Courses",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch BUR Courses": {
+        "main": [
+          [
+            {
+              "node": "Parse BUR Courses",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse BUR Courses": {
+        "main": [
+          [
+            {
+              "node": "Build Audit Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Audit Report": {
+        "main": [
+          [
+            {
+              "node": "Post to Slack",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When clicking 'Execute workflow'": {
+        "main": [
+          [
+            {
+              "node": "Get Outlook Calendar Events",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch online.qagile.pl Courses": {
+        "main": [
+          [
+            {
+              "node": "Fetch online.qagile.pl Listing",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch online.qagile.pl Listing": {
+        "main": [
+          [
+            {
+              "node": "Parse online.qagile.pl Courses",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Krystian Kaczor",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-04-09T14:02:57.625Z",
+        "id": 321,
+        "workflowId": "1MLHq9gEDw5lD8Y7",
+        "versionId": "94460501-39a3-4bca-89dc-d43315da2025",
+        "event": "activated",
+        "userId": "d20c49d1-e72b-4b77-8ef9-db89288460b0"
+      },
+      {
+        "createdAt": "2026-04-09T14:02:57.608Z",
+        "id": 320,
+        "workflowId": "1MLHq9gEDw5lD8Y7",
+        "versionId": "94460501-39a3-4bca-89dc-d43315da2025",
+        "event": "deactivated",
+        "userId": "d20c49d1-e72b-4b77-8ef9-db89288460b0"
+      }
+    ]
+  }
 }
