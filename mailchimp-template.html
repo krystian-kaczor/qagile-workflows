@@ -46,11 +46,10 @@
       .post-row { display: block !important; width: 100% !important; }
       .post-col { display: block !important; width: 100% !important; padding-left: 0 !important; padding-right: 0 !important; margin-bottom: 16px !important; }
 
-      /* Event card wrapping */
-      .event-card-row { display: block !important; }
-      .event-date-cell { display: block !important; width: 100% !important; padding: 16px 16px 0 16px !important; }
-      .event-info-cell { display: block !important; width: 100% !important; padding: 8px 16px !important; }
-      .event-btn-cell { display: block !important; width: 100% !important; padding: 0 16px 16px !important; text-align: left !important; white-space: normal !important; }
+      /* Event card: keep horizontal, just tighten padding */
+      .event-date-cell { padding: 10px 6px 10px 10px !important; width: 60px !important; }
+      .event-info-cell { padding: 10px 6px !important; }
+      .event-btn-cell { padding: 10px 10px 10px 4px !important; white-space: normal !important; }
 
       /* Header banner font size */
       .newsletter-title { font-size: 28px !important; }
@@ -63,8 +62,9 @@
       .event-date-day { font-size: 20px !important; }
       .event-date-month { font-size: 10px !important; }
 
-      /* Social icons: shrink on mobile */
+      /* Social icons: shrink and tighten spacing on mobile */
       .social-icon { width: 24px !important; height: 24px !important; }
+      .social-icon-cell { padding: 0 4px !important; }
     }
 
     /* Dark mode */
@@ -332,25 +332,25 @@
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"
                      style="margin:0 auto 14px;">
                 <tr>
-                  <td style="padding:0 8px;">
+                  <td class="social-icon-cell" style="padding:0 8px;">
                     <a href="https://www.linkedin.com/company/qagile" target="_blank">
                       <img src="https://cdn-images.mailchimp.com/icons/social-block-v2/color-linkedin-48.png"
                            alt="LinkedIn" width="32" height="32" class="social-icon" style="display:block;" />
                     </a>
                   </td>
-                  <td style="padding:0 8px;">
+                  <td class="social-icon-cell" style="padding:0 8px;">
                     <a href="https://www.facebook.com/qagilepl/" target="_blank">
                       <img src="https://cdn-images.mailchimp.com/icons/social-block-v2/color-facebook-48.png"
                            alt="Facebook" width="32" height="32" class="social-icon" style="display:block;" />
                     </a>
                   </td>
-                  <td style="padding:0 8px;">
+                  <td class="social-icon-cell" style="padding:0 8px;">
                     <a href="https://www.youtube.com/@QAgileQualityinAgile" target="_blank">
                       <img src="https://cdn-images.mailchimp.com/icons/social-block-v2/color-youtube-48.png"
                            alt="YouTube" width="32" height="32" class="social-icon" style="display:block;" />
                     </a>
                   </td>
-                  <td style="padding:0 8px;">
+                  <td class="social-icon-cell" style="padding:0 8px;">
                     <a href="https://twitter.com/QAgile_pl" target="_blank">
                       <img src="https://cdn-images.mailchimp.com/icons/social-block-v2/color-twitter-48.png"
                            alt="X" width="32" height="32" class="social-icon" style="display:block;" />
