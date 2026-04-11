@@ -1,0 +1,1529 @@
+{
+  "updatedAt": "2026-04-11T12:17:40.622Z",
+  "createdAt": "2025-09-08T23:55:15.693Z",
+  "id": "LzfWyVEv7t85J4dW",
+  "name": "QAgile Monthly Newsletter",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months"
+            }
+          ]
+        }
+      },
+      "id": "0fa315bc-8b0c-4720-8899-83a9f3501ff4",
+      "name": "Monthly Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -768,
+        -1424
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "16YYcEg51Gi5O8zNSD8zechqymbyMiWpbZ7yBOMsBx-4",
+          "mode": "list",
+          "cachedResultName": "Newsletter Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16YYcEg51Gi5O8zNSD8zechqymbyMiWpbZ7yBOMsBx-4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sent Posts",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16YYcEg51Gi5O8zNSD8zechqymbyMiWpbZ7yBOMsBx-4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "3338ca2a-d924-47d2-b545-272c45a08680",
+      "name": "Update Sent Posts",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        1920,
+        -1712
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MHBNDRCpxS0rqKnj",
+          "name": "Google Sheets account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#general",
+          "mode": "name"
+        },
+        "text": "=Newsletter generated successfully: {{$json.fileName}}",
+        "otherOptions": {}
+      },
+      "id": "084dfb54-6ebf-423a-90c9-0a9282486889",
+      "name": "Slack Success Notification1",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        2144,
+        -1520
+      ],
+      "webhookId": "3c17d876-006c-45a4-a990-e4b871bce94f",
+      "credentials": {
+        "slackApi": {
+          "id": "ccYfDE6Yak5Wvc5U",
+          "name": "Slack account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "list",
+        "owner": {
+          "__rl": true,
+          "value": "krystian-kaczor",
+          "mode": "list",
+          "cachedResultName": "krystian-kaczor",
+          "cachedResultUrl": "https://github.com/krystian-kaczor"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "qagile-newsletter",
+          "mode": "list",
+          "cachedResultName": "qagile-newsletter",
+          "cachedResultUrl": "https://github.com/krystian-kaczor/qagile-newsletter"
+        },
+        "filePath": "n8n-template-parts"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        -544,
+        -1616
+      ],
+      "id": "3d22e6a7-39bb-41cc-af74-6ec01b957776",
+      "name": "List Files to Get",
+      "webhookId": "495e0265-c89e-4246-8c38-31ae15c144e0",
+      "credentials": {
+        "githubApi": {
+          "id": "TiV8Gevuwsyon98Y",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": " path",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        -1616
+      ],
+      "id": "60057d8d-f642-4a7d-a8f1-017fe5e7b8c9",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "value": "krystian-kaczor",
+          "mode": "list",
+          "cachedResultName": "krystian-kaczor",
+          "cachedResultUrl": "https://github.com/krystian-kaczor"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "qagile-newsletter",
+          "mode": "list",
+          "cachedResultName": "qagile-newsletter",
+          "cachedResultUrl": "https://github.com/krystian-kaczor/qagile-newsletter"
+        },
+        "filePath": "={{ $json.path }}",
+        "additionalParameters": {}
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        -96,
+        -1616
+      ],
+      "id": "d5658af4-9718-45df-88f1-c563f3b8080f",
+      "name": "Get File",
+      "webhookId": "8c10fb77-9e5c-4e11-936d-fb9236ce3544",
+      "credentials": {
+        "githubApi": {
+          "id": "TiV8Gevuwsyon98Y",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const files = $input.all();\n\nconst decoded = [];\nfor (let i = 0; i < files.length; i++) {\n  const name = files[i].binary.data.fileName.replace('.html', '');\n  const buffer = await this.helpers.getBinaryDataBuffer(i, 'data');\n  const content = buffer.toString('utf8');\n  decoded.push({ json: { name, html: content } });\n}\n\nreturn decoded;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        128,
+        -1616
+      ],
+      "id": "e8f0bb85-3f4e-4bb3-91f9-231a2f3fb399",
+      "name": "Decode Files"
+    },
+    {
+      "parameters": {
+        "jsCode": "const template_parts = {};\n$input.all().forEach(file => {\n  const name = file.json.name;\n  const html = file.json.html;\n  template_parts[name] = html;\n});\n\nreturn [\n  {\n    json: {\n      template_parts\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        -1616
+      ],
+      "id": "90d7716a-1973-43d2-a35d-db81a7e3f23c",
+      "name": "Merge Templates"
+    },
+    {
+      "parameters": {
+        "jsCode": "const templates = $('Merge Templates').first().json.template_parts;\n\nconst intro_html = $('Render Intro').first().json.intro_html;\nconst posts_section_html = $('Render Posts Section').first().json.posts_section_html;\nconst events_section_html = $('Render Events Section').first().json.events_section_html;\n\n// Inner body — injected into Mailchimp template via mc:edit=\"body\"\nconst newsletter_html = [\n  templates.header,\n  intro_html,\n  posts_section_html,\n  events_section_html,\n  templates.footer\n].join('\\n');\n\n// Fetch the shell template from GitHub\nconst shellResponse = await this.helpers.httpRequest({\n  method: 'GET',\n  url: 'https://raw.githubusercontent.com/krystian-kaczor/qagile-workflows/master/mailchimp-template.html',\n  returnFullResponse: false\n});\n\nconst shellHtml = typeof shellResponse === 'string' ? shellResponse : shellResponse.body;\n\n// Find the mc:edit=\"body\" div and replace everything between opening and closing tag.\n// Use indexOf/lastIndexOf to avoid regex issues with deeply nested divs.\nconst openTag = '<div mc:edit=\"body\">';\nconst start = shellHtml.indexOf(openTag);\nif (start === -1) throw new Error('mc:edit=\"body\" placeholder not found in shell template');\n\n// Walk forward counting div depth to find the matching closing </div>\nlet depth = 0;\nlet i = start;\nlet end = -1;\nwhile (i < shellHtml.length) {\n  if (shellHtml.startsWith('<div', i)) depth++;\n  else if (shellHtml.startsWith('</div>', i)) {\n    depth--;\n    if (depth === 0) { end = i + 6; break; }\n  }\n  i++;\n}\nif (end === -1) throw new Error('Could not find closing </div> for mc:edit=\"body\"');\n\nconst rendered_html = shellHtml.slice(0, start) +\n  openTag + newsletter_html + '</div>' +\n  shellHtml.slice(end);\n\nreturn [{ json: { newsletter_html, rendered_html } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -1424
+      ],
+      "id": "c0911a99-33ed-43e1-bd6f-7aa9fa57faa0",
+      "name": "Assemble Newsletter"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "dIUrUcGHlFGYoZYg",
+          "mode": "list",
+          "cachedResultName": "Get Upcoming Events"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        336,
+        -1136
+      ],
+      "name": "Call Get Upcoming Events",
+      "id": "cce3842c-064b-4e58-928e-be28e955af80"
+    },
+    {
+      "parameters": {
+        "jsCode": "function renderEvents(events, templateItem) {\n  if (!Array.isArray(events) || events.length === 0) {\n    return '<p style=\"text-align:center;\">Brak nadchodzących szkoleń.</p>';\n  }\n  return events.map(event => {\n    const title = event.json.title || 'Bez nazwy';\n    const startDate = event.json.startDate || event.start_date || '';\n    const location = event.json.location || '';\n    const link = event.json.link || '';\n    const isOnline = location.toLowerCase().includes('online');\n    const icon = isOnline ? '<span style=\"color:#243760;\">💻</span>' : '<span style=\"color:#243760;\">🏢</span>';\n    return templateItem\n      .replace(/\\{\\{icon\\}\\}/g, icon)\n      .replace(/\\{\\{link\\}\\}/g, link)\n      .replace(/\\{\\{event_title\\}\\}/g, title)\n      .replace(/\\{\\{start_date\\}\\}/g, startDate)\n      .replace(/\\{\\{location\\}\\}/g, location);\n  }).join('\\n');\n}\n\nconst templates = $('Merge Templates').first().json.template_parts;\nconst events = $('Call Get Upcoming Events').first().json.Events || [];\n\nconst events_section_html = templates.events_section.replace('{{events_html}}', renderEvents(events, templates.single_event));\n\nreturn [{ json: { events_section_html } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -1424
+      ],
+      "id": "5e6f4b1f-9961-49b4-a69e-08d2856b05a1",
+      "name": "Render Events Section"
+    },
+    {
+      "parameters": {
+        "jsCode": "function renderPosts(posts, templateItem) {\n  if (!Array.isArray(posts) || posts.length === 0) {\n    return '<p style=\"text-align:center;\">Brak nowych artykułów.</p>';\n  }\n  return posts.map(post => {\n    const title = post.title || 'Bez tytułu';\n    const excerpt = post.excerpt || '';\n    const url = post.url || '#';\n    const image = post.image || post.image_url || 'https://placehold.co/560x200?text=QAgile';\n    return templateItem\n      .replace(/\\{\\{title\\}\\}/g, title)\n      .replace(/\\{\\{excerpt\\}\\}/g, excerpt)\n      .replace(/\\{\\{url\\}\\}/g, url)\n      .replace(/\\{\\{image_url\\}\\}/g, image);\n  }).join('\\n');\n}\n\nconst templates = $('Merge Templates').first().json.template_parts;\nconst posts = $('Call Get Recent Posts').first().json.blogPosts || [];\nconst limited = Array.isArray(posts) ? posts.slice(0, 4) : [];\n\nconst posts_section_html = templates.posts_section.replace('{{posts_html}}', renderPosts(limited, templates.single_post));\n\nreturn [{ json: { posts_section_html } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        -1424
+      ],
+      "id": "3438d2e5-6dd1-4c70-a187-50a7f9ba083b",
+      "name": "Render Posts Section"
+    },
+    {
+      "parameters": {
+        "jsCode": "const templates = $('Merge Templates').first().json.template_parts;\n\nconst now = new Date();\nconst monthName = now.toLocaleString('pl-PL', { month: 'long' });\nconst monthNameCapital = monthName.charAt(0).toUpperCase() + monthName.slice(1);\nconst year = now.getFullYear();\n\nconst intro_header = `${monthNameCapital} ${year} — Nowe Szkolenia i Artykuły`;\nconst intro_text = `Witaj w ${monthName}owym wydaniu newslettera QAgile! Przygotowaliśmy dla Ciebie świeże artykuły i aktualne terminy szkoleń Scrum.org oraz Kanban University.`;\n\nconst intro_html = templates.intro\n  .replace(/\\{\\{intro_header\\}\\}/g, intro_header)\n  .replace(/\\{\\{intro_text\\}\\}/g, intro_text);\n\nreturn [{ json: { intro_html } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        -1424
+      ],
+      "id": "5e28b951-4df6-49ae-8d24-8ddd065b1c35",
+      "name": "Render Intro"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        576,
+        -1440
+      ],
+      "id": "6f46c5fd-3f56-4d06-b04c-79c5bb06ab82",
+      "name": "Merge Data"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "nkMyOm6jwh7DpCwW",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/nkMyOm6jwh7DpCwW",
+          "cachedResultName": "Get Recent Posts"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        112,
+        -1408
+      ],
+      "id": "a514126d-1323-4ac0-abb6-03f1d223d3a3",
+      "name": "Call Get Recent Posts",
+      "alwaysOutputData": false,
+      "executeOnce": false,
+      "retryOnFail": true,
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "name": "={{$json.fileName}}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1EjqZM9T5mOvSoOpmMfNizM_Tmclniueo",
+          "mode": "list",
+          "cachedResultName": "Newsletters",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1EjqZM9T5mOvSoOpmMfNizM_Tmclniueo"
+        },
+        "options": {}
+      },
+      "id": "9541b79e-b371-40d5-ab5d-c45020f4fc6a",
+      "name": "Save Newsletter to Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1920,
+        -1520
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "VrROoWoF5DYSLuwl",
+          "name": "Google Drive account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const newsletter = $('Assemble Newsletter').first().json;\nconst sentDate = new Date().toISOString().split('T')[0];\nconst now = new Date();\nconst newsletterMonth = `${now.toLocaleString('pl-PL', {month: 'long'})} ${now.getFullYear()}`;\n\nreturn [{\n  json: {\n    sentDate: sentDate,\n    newsletterMonth: newsletterMonth,\n    htmlLength: (newsletter.newsletter_html || '').length\n  }\n}];"
+      },
+      "id": "5bf35599-8fde-43c0-adaf-8e5a69aaeb1a",
+      "name": "Prepare Sheet Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        -1712
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const newsletter = $input.first().json;\nconst now = new Date();\nconst opts = { timeZone: 'Europe/Warsaw', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false };\nconst parts = new Intl.DateTimeFormat('pl-PL', opts).formatToParts(now);\nconst get = (type) => parts.find(p => p.type === type).value;\nconst fileName = `newsletter-${get('year')}-${get('month')}-${get('day')}-${get('hour')}${get('minute')}.html`;\n\n// Use full rendered HTML (shell + body) for the saved file\nconst htmlContent = newsletter.rendered_html || newsletter.newsletter_html;\nconst htmlBuffer = Buffer.from(htmlContent, 'utf8');\n\nreturn [{\n  json: { fileName },\n  binary: {\n    data: await this.helpers.prepareBinaryData(htmlBuffer, fileName, 'text/html')\n  }\n}];"
+      },
+      "id": "ddbcb1af-17c7-4edb-ae1f-ed833d22bbe8",
+      "name": "Prepare Newsletter File",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        -1520
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://us12.api.mailchimp.com/3.0/campaigns",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mailchimpApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ type: 'regular', recipients: { list_id: 'ee9dc44415' }, settings: { subject_line: new Date().toLocaleString('pl-PL', {month: 'long'}).charAt(0).toUpperCase() + new Date().toLocaleString('pl-PL', {month: 'long'}).slice(1) + ' ' + new Date().getFullYear() + ' — Nowe Szkolenia i Artykuły QAgile', preview_text: 'Najnowsze artykuły i nadchodzące szkolenia Scrum.org oraz Kanban University.', title: 'Newsletter QAgile ' + new Date().toLocaleString('pl-PL', {month: 'long'}) + ' ' + new Date().getFullYear(), from_name: 'QAgile - Jakość w Agile', reply_to: 'info@qagile.pl' } }) }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0002-0002-0002-000000000002",
+      "name": "Create Campaign",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1696,
+        -1328
+      ],
+      "credentials": {
+        "mailchimpApi": {
+          "id": "hbYvj5A8Esga4CzA",
+          "name": "Mailchimp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ 'https://us12.api.mailchimp.com/3.0/campaigns/' + $('Create Campaign').first().json.id + '/content' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mailchimpApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ template: { id: 10086294, sections: { body: $('Assemble Newsletter').first().json.newsletter_html } } }) }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0003-0003-0003-000000000003",
+      "name": "Set Campaign Content",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1920,
+        -1328
+      ],
+      "credentials": {
+        "mailchimpApi": {
+          "id": "hbYvj5A8Esga4CzA",
+          "name": "Mailchimp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/krystian-kaczor/qagile-newsletter/contents/mailchimp-template.html",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3.raw"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0005-0005-0005-000000000005",
+      "name": "Fetch Template HTML",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1696,
+        -1136
+      ],
+      "credentials": {
+        "githubApi": {
+          "id": "TiV8Gevuwsyon98Y",
+          "name": "GitHub account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://us12.api.mailchimp.com/3.0/templates",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "mailchimpApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const item = $input.first().json; const html = typeof item === 'string' ? item : (item.data || item.body || JSON.stringify(item)); return JSON.stringify({ name: 'QAgile Newsletter Template 2026', html }); })() }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0006-0006-0006-000000000006",
+      "name": "Upload Template",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1920,
+        -1136
+      ],
+      "credentials": {
+        "mailchimpApi": {
+          "id": "hbYvj5A8Esga4CzA",
+          "name": "Mailchimp account"
+        }
+      },
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Monthly Trigger": {
+      "main": [
+        [
+          {
+            "node": "List Files to Get",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call Get Upcoming Events",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call Get Recent Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Files to Get": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Get File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get File": {
+      "main": [
+        [
+          {
+            "node": "Decode Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decode Files": {
+      "main": [
+        [
+          {
+            "node": "Merge Templates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Templates": {
+      "main": [
+        [
+          {
+            "node": "Merge Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Get Recent Posts": {
+      "main": [
+        [
+          {
+            "node": "Merge Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Assemble Newsletter": {
+      "main": [
+        [
+          {
+            "node": "Prepare Sheet Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Newsletter File",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Template HTML",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create Campaign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Data": {
+      "main": [
+        [
+          {
+            "node": "Render Intro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render Intro": {
+      "main": [
+        [
+          {
+            "node": "Render Events Section",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render Events Section": {
+      "main": [
+        [
+          {
+            "node": "Render Posts Section",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render Posts Section": {
+      "main": [
+        [
+          {
+            "node": "Assemble Newsletter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Newsletter to Drive": {
+      "main": [
+        [
+          {
+            "node": "Slack Success Notification1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Sheet Data": {
+      "main": [
+        [
+          {
+            "node": "Update Sent Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Newsletter File": {
+      "main": [
+        [
+          {
+            "node": "Save Newsletter to Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Campaign": {
+      "main": [
+        [
+          {
+            "node": "Set Campaign Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Template HTML": {
+      "main": [
+        [
+          {
+            "node": "Upload Template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Get Upcoming Events": {
+      "main": [
+        [
+          {
+            "node": "Merge Data",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Monthly Trigger": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "94774b9d-f785-4c81-a9c7-12a35b86b2e8",
+  "activeVersionId": "d0a4f054-0906-4716-8816-36a0455f51f5",
+  "versionCounter": 140,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-09-08T23:55:15.700Z",
+      "createdAt": "2025-09-08T23:55:15.700Z",
+      "role": "workflow:owner",
+      "workflowId": "LzfWyVEv7t85J4dW",
+      "projectId": "BgKOdyk040DxPHte",
+      "project": {
+        "updatedAt": "2025-09-08T23:44:44.373Z",
+        "createdAt": "2025-09-08T16:48:28.019Z",
+        "id": "BgKOdyk040DxPHte",
+        "name": "Krystian Kaczor <krystian.kaczor@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "d20c49d1-e72b-4b77-8ef9-db89288460b0"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-04-11T12:15:32.127Z",
+    "createdAt": "2026-04-11T12:15:32.127Z",
+    "versionId": "d0a4f054-0906-4716-8816-36a0455f51f5",
+    "workflowId": "LzfWyVEv7t85J4dW",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "months"
+              }
+            ]
+          }
+        },
+        "id": "0fa315bc-8b0c-4720-8899-83a9f3501ff4",
+        "name": "Monthly Trigger",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          -768,
+          -1424
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "16YYcEg51Gi5O8zNSD8zechqymbyMiWpbZ7yBOMsBx-4",
+            "mode": "list",
+            "cachedResultName": "Newsletter Log",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16YYcEg51Gi5O8zNSD8zechqymbyMiWpbZ7yBOMsBx-4/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Sent Posts",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16YYcEg51Gi5O8zNSD8zechqymbyMiWpbZ7yBOMsBx-4/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "autoMapInputData",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "id": "3338ca2a-d924-47d2-b545-272c45a08680",
+        "name": "Update Sent Posts",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4,
+        "position": [
+          1920,
+          -1712
+        ],
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "MHBNDRCpxS0rqKnj",
+            "name": "Google Sheets account"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "select": "channel",
+          "channelId": {
+            "__rl": true,
+            "value": "#general",
+            "mode": "name"
+          },
+          "text": "=Newsletter generated successfully: {{$json.fileName}}",
+          "otherOptions": {}
+        },
+        "id": "084dfb54-6ebf-423a-90c9-0a9282486889",
+        "name": "Slack Success Notification1",
+        "type": "n8n-nodes-base.slack",
+        "typeVersion": 2.2,
+        "position": [
+          2144,
+          -1520
+        ],
+        "webhookId": "3c17d876-006c-45a4-a990-e4b871bce94f",
+        "credentials": {
+          "slackApi": {
+            "id": "ccYfDE6Yak5Wvc5U",
+            "name": "Slack account"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "resource": "file",
+          "operation": "list",
+          "owner": {
+            "__rl": true,
+            "value": "krystian-kaczor",
+            "mode": "list",
+            "cachedResultName": "krystian-kaczor",
+            "cachedResultUrl": "https://github.com/krystian-kaczor"
+          },
+          "repository": {
+            "__rl": true,
+            "value": "qagile-newsletter",
+            "mode": "list",
+            "cachedResultName": "qagile-newsletter",
+            "cachedResultUrl": "https://github.com/krystian-kaczor/qagile-newsletter"
+          },
+          "filePath": "n8n-template-parts"
+        },
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          -544,
+          -1616
+        ],
+        "id": "3d22e6a7-39bb-41cc-af74-6ec01b957776",
+        "name": "List Files to Get",
+        "webhookId": "495e0265-c89e-4246-8c38-31ae15c144e0",
+        "credentials": {
+          "githubApi": {
+            "id": "TiV8Gevuwsyon98Y",
+            "name": "GitHub account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "fieldToSplitOut": " path",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitOut",
+        "typeVersion": 1,
+        "position": [
+          -320,
+          -1616
+        ],
+        "id": "60057d8d-f642-4a7d-a8f1-017fe5e7b8c9",
+        "name": "Split Out"
+      },
+      {
+        "parameters": {
+          "resource": "file",
+          "operation": "get",
+          "owner": {
+            "__rl": true,
+            "value": "krystian-kaczor",
+            "mode": "list",
+            "cachedResultName": "krystian-kaczor",
+            "cachedResultUrl": "https://github.com/krystian-kaczor"
+          },
+          "repository": {
+            "__rl": true,
+            "value": "qagile-newsletter",
+            "mode": "list",
+            "cachedResultName": "qagile-newsletter",
+            "cachedResultUrl": "https://github.com/krystian-kaczor/qagile-newsletter"
+          },
+          "filePath": "={{ $json.path }}",
+          "additionalParameters": {}
+        },
+        "type": "n8n-nodes-base.github",
+        "typeVersion": 1.1,
+        "position": [
+          -96,
+          -1616
+        ],
+        "id": "d5658af4-9718-45df-88f1-c563f3b8080f",
+        "name": "Get File",
+        "webhookId": "8c10fb77-9e5c-4e11-936d-fb9236ce3544",
+        "credentials": {
+          "githubApi": {
+            "id": "TiV8Gevuwsyon98Y",
+            "name": "GitHub account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const files = $input.all();\n\nconst decoded = [];\nfor (let i = 0; i < files.length; i++) {\n  const name = files[i].binary.data.fileName.replace('.html', '');\n  const buffer = await this.helpers.getBinaryDataBuffer(i, 'data');\n  const content = buffer.toString('utf8');\n  decoded.push({ json: { name, html: content } });\n}\n\nreturn decoded;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          128,
+          -1616
+        ],
+        "id": "e8f0bb85-3f4e-4bb3-91f9-231a2f3fb399",
+        "name": "Decode Files"
+      },
+      {
+        "parameters": {
+          "jsCode": "const template_parts = {};\n$input.all().forEach(file => {\n  const name = file.json.name;\n  const html = file.json.html;\n  template_parts[name] = html;\n});\n\nreturn [\n  {\n    json: {\n      template_parts\n    }\n  }\n];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          352,
+          -1616
+        ],
+        "id": "90d7716a-1973-43d2-a35d-db81a7e3f23c",
+        "name": "Merge Templates"
+      },
+      {
+        "parameters": {
+          "jsCode": "const templates = $('Merge Templates').first().json.template_parts;\n\nconst intro_html = $('Render Intro').first().json.intro_html;\nconst posts_section_html = $('Render Posts Section').first().json.posts_section_html;\nconst events_section_html = $('Render Events Section').first().json.events_section_html;\n\n// Inner body — injected into Mailchimp template via mc:edit=\"body\"\nconst newsletter_html = [\n  templates.header,\n  intro_html,\n  posts_section_html,\n  events_section_html,\n  templates.footer\n].join('\\n');\n\n// Fetch the shell template from GitHub\nconst shellResponse = await this.helpers.httpRequest({\n  method: 'GET',\n  url: 'https://raw.githubusercontent.com/krystian-kaczor/qagile-workflows/master/mailchimp-template.html',\n  returnFullResponse: false\n});\n\nconst shellHtml = typeof shellResponse === 'string' ? shellResponse : shellResponse.body;\n\n// Find the mc:edit=\"body\" div and replace everything between opening and closing tag.\n// Use indexOf/lastIndexOf to avoid regex issues with deeply nested divs.\nconst openTag = '<div mc:edit=\"body\">';\nconst start = shellHtml.indexOf(openTag);\nif (start === -1) throw new Error('mc:edit=\"body\" placeholder not found in shell template');\n\n// Walk forward counting div depth to find the matching closing </div>\nlet depth = 0;\nlet i = start;\nlet end = -1;\nwhile (i < shellHtml.length) {\n  if (shellHtml.startsWith('<div', i)) depth++;\n  else if (shellHtml.startsWith('</div>', i)) {\n    depth--;\n    if (depth === 0) { end = i + 6; break; }\n  }\n  i++;\n}\nif (end === -1) throw new Error('Could not find closing </div> for mc:edit=\"body\"');\n\nconst rendered_html = shellHtml.slice(0, start) +\n  openTag + newsletter_html + '</div>' +\n  shellHtml.slice(end);\n\nreturn [{ json: { newsletter_html, rendered_html } }];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1472,
+          -1424
+        ],
+        "id": "c0911a99-33ed-43e1-bd6f-7aa9fa57faa0",
+        "name": "Assemble Newsletter"
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "dIUrUcGHlFGYoZYg",
+            "mode": "list",
+            "cachedResultName": "Get Upcoming Events"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": true
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.2,
+        "position": [
+          352,
+          -1424
+        ],
+        "name": "Call Get Upcoming Events",
+        "id": "cce3842c-064b-4e58-928e-be28e955af80"
+      },
+      {
+        "parameters": {
+          "jsCode": "function renderEvents(events, templateItem) {\n  if (!Array.isArray(events) || events.length === 0) {\n    return '<p style=\"text-align:center;\">Brak nadchodzących szkoleń.</p>';\n  }\n  return events.map(event => {\n    const title = event.json.title || 'Bez nazwy';\n    const startDate = event.json.startDate || event.start_date || '';\n    const location = event.json.location || '';\n    const link = event.json.link || '';\n    const isOnline = location.toLowerCase().includes('online');\n    const icon = isOnline ? '<span style=\"color:#243760;\">💻</span>' : '<span style=\"color:#243760;\">🏢</span>';\n    return templateItem\n      .replace(/\\{\\{icon\\}\\}/g, icon)\n      .replace(/\\{\\{link\\}\\}/g, link)\n      .replace(/\\{\\{event_title\\}\\}/g, title)\n      .replace(/\\{\\{start_date\\}\\}/g, startDate)\n      .replace(/\\{\\{location\\}\\}/g, location);\n  }).join('\\n');\n}\n\nconst templates = $('Merge Templates').first().json.template_parts;\nconst events = $('Call Get Upcoming Events').first().json.Events || [];\n\nconst events_section_html = templates.events_section.replace('{{events_html}}', renderEvents(events, templates.single_event));\n\nreturn [{ json: { events_section_html } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1024,
+          -1424
+        ],
+        "id": "5e6f4b1f-9961-49b4-a69e-08d2856b05a1",
+        "name": "Render Events Section"
+      },
+      {
+        "parameters": {
+          "jsCode": "function renderPosts(posts, templateItem) {\n  if (!Array.isArray(posts) || posts.length === 0) {\n    return '<p style=\"text-align:center;\">Brak nowych artykułów.</p>';\n  }\n  return posts.map(post => {\n    const title = post.title || 'Bez tytułu';\n    const excerpt = post.excerpt || '';\n    const url = post.url || '#';\n    const image = post.image || post.image_url || 'https://placehold.co/560x200?text=QAgile';\n    return templateItem\n      .replace(/\\{\\{title\\}\\}/g, title)\n      .replace(/\\{\\{excerpt\\}\\}/g, excerpt)\n      .replace(/\\{\\{url\\}\\}/g, url)\n      .replace(/\\{\\{image_url\\}\\}/g, image);\n  }).join('\\n');\n}\n\nconst templates = $('Merge Templates').first().json.template_parts;\nconst posts = $('Call Get Recent Posts').first().json.blogPosts || [];\nconst limited = Array.isArray(posts) ? posts.slice(0, 4) : [];\n\nconst posts_section_html = templates.posts_section.replace('{{posts_html}}', renderPosts(limited, templates.single_post));\n\nreturn [{ json: { posts_section_html } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1248,
+          -1424
+        ],
+        "id": "3438d2e5-6dd1-4c70-a187-50a7f9ba083b",
+        "name": "Render Posts Section"
+      },
+      {
+        "parameters": {
+          "jsCode": "const templates = $('Merge Templates').first().json.template_parts;\n\nconst now = new Date();\nconst monthName = now.toLocaleString('pl-PL', { month: 'long' });\nconst monthNameCapital = monthName.charAt(0).toUpperCase() + monthName.slice(1);\nconst year = now.getFullYear();\n\nconst intro_header = `${monthNameCapital} ${year} — Nowe Szkolenia i Artykuły`;\nconst intro_text = `Witaj w ${monthName}owym wydaniu newslettera QAgile! Przygotowaliśmy dla Ciebie świeże artykuły i aktualne terminy szkoleń Scrum.org oraz Kanban University.`;\n\nconst intro_html = templates.intro\n  .replace(/\\{\\{intro_header\\}\\}/g, intro_header)\n  .replace(/\\{\\{intro_text\\}\\}/g, intro_text);\n\nreturn [{ json: { intro_html } }];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          800,
+          -1424
+        ],
+        "id": "5e28b951-4df6-49ae-8d24-8ddd065b1c35",
+        "name": "Render Intro"
+      },
+      {
+        "parameters": {
+          "numberInputs": 3
+        },
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          576,
+          -1424
+        ],
+        "id": "6f46c5fd-3f56-4d06-b04c-79c5bb06ab82",
+        "name": "Merge Data"
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "nkMyOm6jwh7DpCwW",
+            "mode": "list",
+            "cachedResultUrl": "/workflow/nkMyOm6jwh7DpCwW",
+            "cachedResultName": "Get Recent Posts"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": true
+          },
+          "options": {
+            "waitForSubWorkflow": true
+          }
+        },
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.2,
+        "position": [
+          352,
+          -1232
+        ],
+        "id": "a514126d-1323-4ac0-abb6-03f1d223d3a3",
+        "name": "Call Get Recent Posts",
+        "alwaysOutputData": false,
+        "executeOnce": false,
+        "retryOnFail": true,
+        "notesInFlow": true
+      },
+      {
+        "parameters": {
+          "name": "={{$json.fileName}}",
+          "driveId": {
+            "__rl": true,
+            "mode": "list",
+            "value": "My Drive"
+          },
+          "folderId": {
+            "__rl": true,
+            "value": "1EjqZM9T5mOvSoOpmMfNizM_Tmclniueo",
+            "mode": "list",
+            "cachedResultName": "Newsletters",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1EjqZM9T5mOvSoOpmMfNizM_Tmclniueo"
+          },
+          "options": {}
+        },
+        "id": "9541b79e-b371-40d5-ab5d-c45020f4fc6a",
+        "name": "Save Newsletter to Drive",
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          1920,
+          -1520
+        ],
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "VrROoWoF5DYSLuwl",
+            "name": "Google Drive account"
+          }
+        },
+        "continueOnFail": true
+      },
+      {
+        "parameters": {
+          "jsCode": "const newsletter = $('Assemble Newsletter').first().json;\nconst sentDate = new Date().toISOString().split('T')[0];\nconst now = new Date();\nconst newsletterMonth = `${now.toLocaleString('pl-PL', {month: 'long'})} ${now.getFullYear()}`;\n\nreturn [{\n  json: {\n    sentDate: sentDate,\n    newsletterMonth: newsletterMonth,\n    htmlLength: (newsletter.newsletter_html || '').length\n  }\n}];"
+        },
+        "id": "5bf35599-8fde-43c0-adaf-8e5a69aaeb1a",
+        "name": "Prepare Sheet Data",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1696,
+          -1712
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const newsletter = $input.first().json;\nconst now = new Date();\nconst opts = { timeZone: 'Europe/Warsaw', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false };\nconst parts = new Intl.DateTimeFormat('pl-PL', opts).formatToParts(now);\nconst get = (type) => parts.find(p => p.type === type).value;\nconst fileName = `newsletter-${get('year')}-${get('month')}-${get('day')}-${get('hour')}${get('minute')}.html`;\n\n// Use full rendered HTML (shell + body) for the saved file\nconst htmlContent = newsletter.rendered_html || newsletter.newsletter_html;\nconst htmlBuffer = Buffer.from(htmlContent, 'utf8');\n\nreturn [{\n  json: { fileName },\n  binary: {\n    data: await this.helpers.prepareBinaryData(htmlBuffer, fileName, 'text/html')\n  }\n}];"
+        },
+        "id": "ddbcb1af-17c7-4edb-ae1f-ed833d22bbe8",
+        "name": "Prepare Newsletter File",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1696,
+          -1520
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://us12.api.mailchimp.com/3.0/campaigns",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "mailchimpApi",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ type: 'regular', recipients: { list_id: 'ee9dc44415' }, settings: { subject_line: new Date().toLocaleString('pl-PL', {month: 'long'}).charAt(0).toUpperCase() + new Date().toLocaleString('pl-PL', {month: 'long'}).slice(1) + ' ' + new Date().getFullYear() + ' — Nowe Szkolenia i Artykuły QAgile', preview_text: 'Najnowsze artykuły i nadchodzące szkolenia Scrum.org oraz Kanban University.', title: 'Newsletter QAgile ' + new Date().toLocaleString('pl-PL', {month: 'long'}) + ' ' + new Date().getFullYear(), from_name: 'QAgile - Jakość w Agile', reply_to: 'info@qagile.pl' } }) }}",
+          "options": {}
+        },
+        "id": "a1b2c3d4-0002-0002-0002-000000000002",
+        "name": "Create Campaign",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          1920,
+          -1328
+        ],
+        "credentials": {
+          "mailchimpApi": {
+            "id": "hbYvj5A8Esga4CzA",
+            "name": "Mailchimp account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "PUT",
+          "url": "={{ 'https://us12.api.mailchimp.com/3.0/campaigns/' + $('Create Campaign').first().json.id + '/content' }}",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "mailchimpApi",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ template: { id: 10086294, sections: { body: $('Assemble Newsletter').first().json.newsletter_html } } }) }}",
+          "options": {}
+        },
+        "id": "a1b2c3d4-0003-0003-0003-000000000003",
+        "name": "Set Campaign Content",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          2144,
+          -1328
+        ],
+        "credentials": {
+          "mailchimpApi": {
+            "id": "hbYvj5A8Esga4CzA",
+            "name": "Mailchimp account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "https://api.github.com/repos/krystian-kaczor/qagile-newsletter/contents/mailchimp-template.html",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "githubApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github.v3.raw"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "a1b2c3d4-0005-0005-0005-000000000005",
+        "name": "Fetch Template HTML",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          1584,
+          -1136
+        ],
+        "credentials": {
+          "githubApi": {
+            "id": "TiV8Gevuwsyon98Y",
+            "name": "GitHub account"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://us12.api.mailchimp.com/3.0/templates",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "mailchimpApi",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ (() => { const item = $input.first().json; const html = typeof item === 'string' ? item : (item.data || item.body || JSON.stringify(item)); return JSON.stringify({ name: 'QAgile Newsletter Template 2026', html }); })() }}",
+          "options": {}
+        },
+        "id": "a1b2c3d4-0006-0006-0006-000000000006",
+        "name": "Upload Template",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4,
+        "position": [
+          1808,
+          -1136
+        ],
+        "credentials": {
+          "mailchimpApi": {
+            "id": "hbYvj5A8Esga4CzA",
+            "name": "Mailchimp account"
+          }
+        },
+        "disabled": true
+      }
+    ],
+    "connections": {
+      "Monthly Trigger": {
+        "main": [
+          [
+            {
+              "node": "List Files to Get",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Call Get Upcoming Events",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Call Get Recent Posts",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "List Files to Get": {
+        "main": [
+          [
+            {
+              "node": "Split Out",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Split Out": {
+        "main": [
+          [
+            {
+              "node": "Get File",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get File": {
+        "main": [
+          [
+            {
+              "node": "Decode Files",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Decode Files": {
+        "main": [
+          [
+            {
+              "node": "Merge Templates",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge Templates": {
+        "main": [
+          [
+            {
+              "node": "Merge Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call Get Recent Posts": {
+        "main": [
+          [
+            {
+              "node": "Merge Data",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Assemble Newsletter": {
+        "main": [
+          [
+            {
+              "node": "Prepare Sheet Data",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Prepare Newsletter File",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Fetch Template HTML",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Create Campaign",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge Data": {
+        "main": [
+          [
+            {
+              "node": "Render Intro",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Render Intro": {
+        "main": [
+          [
+            {
+              "node": "Render Events Section",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Render Events Section": {
+        "main": [
+          [
+            {
+              "node": "Render Posts Section",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Render Posts Section": {
+        "main": [
+          [
+            {
+              "node": "Assemble Newsletter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Save Newsletter to Drive": {
+        "main": [
+          [
+            {
+              "node": "Slack Success Notification1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Sheet Data": {
+        "main": [
+          [
+            {
+              "node": "Update Sent Posts",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Newsletter File": {
+        "main": [
+          [
+            {
+              "node": "Save Newsletter to Drive",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Campaign": {
+        "main": [
+          [
+            {
+              "node": "Set Campaign Content",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Template HTML": {
+        "main": [
+          [
+            {
+              "node": "Upload Template",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Call Get Upcoming Events": {
+        "main": [
+          [
+            {
+              "node": "Merge Data",
+              "type": "main",
+              "index": 2
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Krystian Kaczor",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-04-11T12:15:32.185Z",
+        "id": 340,
+        "workflowId": "LzfWyVEv7t85J4dW",
+        "versionId": "d0a4f054-0906-4716-8816-36a0455f51f5",
+        "event": "activated",
+        "userId": "d20c49d1-e72b-4b77-8ef9-db89288460b0"
+      },
+      {
+        "createdAt": "2026-04-11T12:15:32.169Z",
+        "id": 339,
+        "workflowId": "LzfWyVEv7t85J4dW",
+        "versionId": "d0a4f054-0906-4716-8816-36a0455f51f5",
+        "event": "deactivated",
+        "userId": "d20c49d1-e72b-4b77-8ef9-db89288460b0"
+      }
+    ]
+  }
+}
