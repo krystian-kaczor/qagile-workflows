@@ -30,13 +30,33 @@
     a { text-decoration: none; }
 
     /* Responsive */
-    @media only screen and (max-width: 680px) {
-      .shell { width: 100% !important; }
-      .header-pad, .hero-pad, .section-pad, .footer-pad { padding-left: 24px !important; padding-right: 24px !important; }
-      .statements-pad, .bullets-pad, .events-pad { padding-left: 24px !important; padding-right: 24px !important; }
-      .grid-pad { padding-left: 16px !important; padding-right: 16px !important; }
-      .offer-margin, .footer-cta-margin { margin-left: 24px !important; margin-right: 24px !important; }
-      .hero-h1 { font-size: 30px !important; line-height: 38px !important; }
+    @media only screen and (max-width: 600px) {
+      .shell { width: 100% !important; border-radius: 0 !important; }
+      .header-pad, .hero-pad, .section-pad, .footer-pad { padding-left: 16px !important; padding-right: 16px !important; }
+      .statements-pad, .bullets-pad, .events-pad { padding-left: 16px !important; padding-right: 16px !important; }
+      .grid-pad { padding-left: 8px !important; padding-right: 8px !important; }
+      .offer-margin, .footer-cta-margin { margin-left: 16px !important; margin-right: 16px !important; }
+      .hero-h1 { font-size: 26px !important; line-height: 34px !important; }
+
+      /* Force all tables to be full width */
+      table { width: 100% !important; min-width: 0 !important; }
+      img { max-width: 100% !important; width: 100% !important; height: auto !important; }
+
+      /* Post 2-column → 1-column stack */
+      .post-row { display: block !important; width: 100% !important; }
+      .post-col { display: block !important; width: 100% !important; padding-left: 0 !important; padding-right: 0 !important; margin-bottom: 16px !important; }
+
+      /* Event card wrapping */
+      .event-card-row { display: block !important; }
+      .event-date-cell { display: block !important; width: 100% !important; padding: 16px 16px 0 16px !important; }
+      .event-info-cell { display: block !important; width: 100% !important; padding: 8px 16px !important; }
+      .event-btn-cell { display: block !important; width: 100% !important; padding: 0 16px 16px !important; text-align: left !important; white-space: normal !important; }
+
+      /* Header banner font size */
+      .newsletter-title { font-size: 28px !important; }
+
+      /* Fix padding on content cells */
+      .content-pad { padding-left: 16px !important; padding-right: 16px !important; }
     }
 
     /* Dark mode */
