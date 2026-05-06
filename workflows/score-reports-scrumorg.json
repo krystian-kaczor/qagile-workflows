@@ -1,0 +1,2364 @@
+{
+  "name": "Score Reports - scrum.org",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "score-reports",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "sr1",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Fetching score reports... results will appear in #qagile-bot shortly.",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "sr2",
+      "name": "Respond to Slack",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -576,
+        -112
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "sr9",
+      "name": "When clicking Execute workflow",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://browserless:3000/function/?token=6R0W53R135510",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "neverError": false,
+              "responseFormat": "json"
+            }
+          }
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
+            }
+          ]
+        },
+        "method": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"code\": \"export default async ({ page, context }) => {\\n  const loginId = context.loginId;\\n  const password = context.password;\\n\\n  await page.setExtraHTTPHeaders({\\n    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',\\n    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',\\n    'Accept-Language': 'en-US,en;q=0.9,pl;q=0.8'\\n  });\\n\\n  // Navigate to scrum.org login — Chromium handles WAF JS challenge automatically\\n  await page.goto('https://www.scrum.org/user/login?destination=/admin/courses/manage', {\\n    waitUntil: 'networkidle2', timeout: 30000\\n  });\\n  try { await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }); } catch(_) {}\\n\\n  // Should now be at FusionAuth login form\\n  const afterGotoUrl = page.url();\\n\\n  if (loginId && password && afterGotoUrl.includes('accounts.scrum.org')) {\\n    // Fill and submit credentials\\n    try {\\n      await page.waitForSelector('input[name=\\\"loginId\\\"], input[type=\\\"email\\\"]', { timeout: 8000 });\\n      await page.type('input[name=\\\"loginId\\\"], input[type=\\\"email\\\"]', loginId);\\n      await page.type('input[name=\\\"password\\\"], input[type=\\\"password\\\"]', password);\\n      await Promise.all([\\n        page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }),\\n        page.click('button[type=\\\"submit\\\"], input[type=\\\"submit\\\"]')\\n      ]);\\n      // Handle any additional redirects (consent, complete-registration)\\n      try { await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }); } catch(_) {}\\n    } catch(e) {\\n      // Credential fill failed — fall through and return what we have\\n    }\\n  }\\n\\n  const finalUrl = page.url();\\n  const allCookies = await page.cookies();\\n\\n  const drupalCookies = allCookies.filter(c => c.domain.includes('scrum.org'));\\n  const drupalCookieStr = drupalCookies.map(c => c.name + '=' + c.value).join('; ');\\n  const ssessCookie = drupalCookies.find(c => c.name.startsWith('SSESS'));\\n  const drupalSessionCookie = ssessCookie ? ssessCookie.name + '=' + ssessCookie.value : '';\\n\\n  const faCookies = allCookies.filter(c => c.domain.includes('accounts.scrum.org'));\\n  const faCookieStr = faCookies.map(c => c.name + '=' + c.value).join('; ');\\n\\n  let fusionAuthHtml = '';\\n  try { fusionAuthHtml = await page.content(); } catch(_) {}\\n\\n  // fusionAuthUrl = where we ended up after WAF (pre-login), for fallback\\n  const fusionAuthUrl = afterGotoUrl.includes('accounts.scrum.org') ? afterGotoUrl : '';\\n\\n  return {\\n    data: {\\n      fusionAuthUrl,\\n      drupalCookies: drupalCookieStr,\\n      drupalSessionCookie,\\n      faCookies: faCookieStr,\\n      fusionAuthHtml,\\n      currentUrl: finalUrl,\\n      loginAttempted: !!(loginId && password)\\n    }\\n  };\\n};\"\n}"
+      },
+      "id": "login1",
+      "name": "Get Login Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -576,
+        -112
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Browserless /function returns Puppeteer result directly as JSON.\n// fusionAuthUrl + drupalCookies already extracted by headless Chrome — no header parsing needed.\nconst raw = $input.first().json;\nconst resp = raw.data || raw;\nconst fusionAuthUrl = resp.fusionAuthUrl || '';\nconst drupalCookieStr = resp.drupalCookies || '';\nconst drupalSessionCookie = resp.drupalSessionCookie || '';\n\nif (!fusionAuthUrl) {\n  throw new Error('Browserless: No FusionAuth URL captured. currentUrl=' + (resp.currentUrl || 'unknown'));\n}\n\nreturn [{json: {\n  fusionAuthUrl,\n  drupalCookies: drupalCookieStr,\n  drupalSessionCookie,\n  faCookies: resp.faCookies || '',\n  fusionAuthHtml: resp.fusionAuthHtml || '',\n  statusCode: 302\n}}];"
+      },
+      "id": "login2",
+      "name": "Extract Login Form",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -352,
+        -112
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "R1ea8DGVBUhDqa5M"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "service",
+              "keyValue": "scrum.org"
+            }
+          ]
+        },
+        "limit": 1
+      },
+      "id": "readCreds",
+      "name": "Read Credentials",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const creds = $input.first().json;\nreturn [{ json: { loginId: creds.username, password: creds.password } }];"
+      },
+      "id": "login2b",
+      "name": "Build Login Body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://browserless:3000/function/?token=6R0W53R135510&timeout=90000",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "*/*"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ (() => { const d = $json; return JSON.stringify({ code: `export default async ({ page, context }) => {\\n  const { loginId, password } = context;\\n\\n  await page.setExtraHTTPHeaders({\\n    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',\\n    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',\\n    'Accept-Language': 'en-US,en;q=0.9,pl;q=0.8'\\n  });\\n\\n  await page.goto('https://www.scrum.org/user/login?destination=/admin/courses/manage', { waitUntil: 'networkidle2', timeout: 30000 });\\n  try { await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }); } catch(_) {}\\n\\n  await page.waitForSelector('input[name=loginId], input[type=email]', { timeout: 15000 });\\n  await page.type('input[name=loginId], input[type=email]', loginId, { delay: 30 });\\n  await page.type('input[name=password], input[type=password]', password, { delay: 30 });\\n\\n  await Promise.all([\\n    page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }),\\n    page.click('button.form-submit, button[type=submit], input[type=submit]')\\n  ]);\\n\\n  try { await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }); } catch(_) {}\\n  try { await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }); } catch(_) {}\\n\\n  const finalUrl = page.url();\\n  const allCookies = await page.cookies();\\n  const scrumCookies = allCookies.filter(c => c.domain.includes('scrum.org') && !c.domain.includes('accounts'));\\n  const ssess = scrumCookies.find(c => c.name.startsWith('SSESS'));\\n  const sessionCookie = ssess ? ssess.name + '=' + ssess.value : '';\\n  const cookieStr = scrumCookies.map(c => c.name + '=' + c.value).join('; ');\\n\\n  return { data: { sessionCookie, cookieStr, finalUrl, scrumDomainCookies: scrumCookies.map(c=>c.name) } };\\n};`, context: { loginId: d.loginId, password: d.password } }); })() }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": false,
+              "neverError": false,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "login3",
+      "name": "Post Login Form",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        544,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Post Login Form is now a browserless call that returns sessionCookie directly\nconst raw = $input.first().json;\nconst resp = raw.data || raw;\nconst sessionCookie = resp.sessionCookie || '';\nconst cookieStr = resp.cookieStr || '';\nconst finalUrl = resp.finalUrl || '';\n\nif (!sessionCookie) {\n  throw new Error('Browserless login: no SSESS cookie returned. finalUrl=' + finalUrl + ' cookies=' + cookieStr);\n}\n\nreturn [{ json: { sessionCookie, cookieStr, finalUrl } }];"
+      },
+      "id": "login4",
+      "name": "Extract Redirect URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.redirectUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $json.cookies }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "login5",
+      "name": "GET Complete Registration",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        992,
+        -112
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const resp = $input.first().json;\nconst headers = resp.headers || {};\nconst location = headers.location || '';\nconst prevCookies = $('Extract Redirect URL').first().json.cookies || '';\nconst setCookies = headers['set-cookie'] || [];\nconst cookieArr = Array.isArray(setCookies) ? setCookies : [setCookies];\nconst parsed = {};\nfor (const pair of prevCookies.split('; ')) {\n  const [k,...v] = pair.split('=');\n  if (k) parsed[k] = v.join('=');\n}\nfor (const c of cookieArr) {\n  if (typeof c === 'string') {\n    const parts = c.split(';')[0].split('=');\n    parsed[parts[0]] = parts.slice(1).join('=');\n  }\n}\nconst mergedCookies = Object.entries(parsed).map(([k,v]) => k+'='+v).join('; ');\nlet consentUrl = location;\nif (consentUrl.startsWith('/')) consentUrl = 'https://accounts.scrum.org' + consentUrl;\nreturn [{json:{consentUrl, cookies: mergedCookies, status: resp.statusCode}}];"
+      },
+      "id": "login6",
+      "name": "Build Consent URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        -112
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// OAuth callback returns meta-refresh to /user/login?destination=...\n// Extract destination and carry Drupal cookies for the callback\nconst resp = $input.first().json;\nconst body = resp.body || resp.data || '';\nconst headers = resp.headers || {};\n\n// Get Drupal cookies from initial login page\nconst drupalCookies = $('Build Login Body').first().json.drupalCookies || '';\n\n// Merge all cookies\nconst prevCookies = $('Build Callback URL').first().json.cookies || '';\nconst setCookies = headers['set-cookie'] || [];\nconst cookieArr = Array.isArray(setCookies) ? setCookies : [setCookies];\nconst parsed = {};\nfor (const pair of prevCookies.split('; ')) {\n  const [k,...v] = pair.split('='); if (k) parsed[k] = v.join('=');\n}\nfor (const c of cookieArr) {\n  if (typeof c === 'string') { const p = c.split(';')[0].split('='); parsed[p[0]] = p.slice(1).join('='); }\n}\nfor (const pair of drupalCookies.split('; ')) {\n  const [k,...v] = pair.split('='); if (k) parsed[k] = v.join('=');\n}\nconst mergedCookies = Object.entries(parsed).map(([k,v]) => k + '=' + v).join('; ');\n\n// Parse meta-refresh URL\nconst metaMatch = body.match(/url='([^']+)'/) || body.match(/url=([^\\\"'\\s>]+)/i);\nif (!metaMatch) throw new Error('No meta-refresh URL found. Status=' + resp.statusCode);\nlet fullUrl = metaMatch[1].replace(/&amp;/g, '&');\nif (fullUrl.startsWith('/')) fullUrl = 'https://www.scrum.org' + fullUrl;\n\n// Extract destination param using regex (more reliable than URL parser in n8n)\nlet callbackUrl = fullUrl;\nconst destMatch = fullUrl.match(/[?&]destination=([^&]+)/);\nif (destMatch) {\n  const destination = decodeURIComponent(destMatch[1]);\n  callbackUrl = 'https://www.scrum.org/' + destination.replace(/^\\//, '');\n}\n\nreturn [{json: {callbackUrl, cookies: mergedCookies, drupalCookies, originalUrl: fullUrl, destFound: !!destMatch}}];"
+      },
+      "id": "login7",
+      "name": "Parse Meta Refresh",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        -112
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "https://www.scrum.org/admin/courses/manage",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "node_date_range_start",
+              "value": "={{ $now.minus({days:30}).toFormat('yyyy-MM-dd') }}"
+            },
+            {
+              "name": "node_date_range_end",
+              "value": "={{ $now.toFormat('yyyy-MM-dd') }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $('Extract Session Cookie').first().json.cookieStr }}"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "sr3",
+      "name": "Fetch Course List",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2224,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $input.first().json.data || '';\nconst courses = [];\n\nconst rows = html.split('<tr>');\nfor (let i = 1; i < rows.length; i++) {\n  const row = rows[i];\n  \n  const scoreMatch = row.match(/score-report\\?courseId=([a-f0-9\\-]+)/);\n  if (!scoreMatch) continue;\n  const courseId = scoreMatch[1];\n  \n  const titleMatch = row.match(/views-field-title[\\s\\S]*?<a[^>]*>([^<]+)<\\/a>/);\n  const title = titleMatch ? titleMatch[1].trim() : 'Unknown';\n  \n  // Student count: look for the actual number after the emoji entity\n  // HTML: <span class=\"student-count-tag\">&#128100; 15</span>\n  const studentTagMatch = row.match(/student-count-tag[^>]*>&#\\d+;\\s*(\\d+)/);\n  const studentCount = studentTagMatch ? parseInt(studentTagMatch[1]) : 0;\n  \n  const dateMatch = row.match(/views-field-course-date-range[^>]*>\\s*([^<]+)</);\n  const date = dateMatch ? dateMatch[1].trim() : '';\n  \n  const statusMatch = row.match(/views-field-course-status-combined[^>]*>\\s*([^<]+)</);\n  const status = statusMatch ? statusMatch[1].trim() : '';\n  \n  courses.push({ json: { courseId, title, date, studentCount, status, _hasReport: true } });\n}\n\nif (courses.length === 0) {\n  return [{ json: { _empty: true, message: 'No courses with score reports found in last 30 days' } }];\n}\nreturn courses;"
+      },
+      "id": "sr4",
+      "name": "Parse Course List",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "1",
+              "leftValue": "={{ $json._hasReport }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ifHasCourses",
+      "name": "Has Score Reports?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2448,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://www.scrum.org/trainers/score-report?courseId={{ $json.courseId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $('Extract Session Cookie').first().json.cookieStr }}"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "sr5",
+      "name": "Download Score Report",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2672,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "id": "sr6",
+      "name": "Parse Excel",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        2896,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const courses = $('Parse Course List').all().map(i => i.json);\nconst allRows = $input.all().map(i => i.json);\n\n// Split the flat row stream into per-course groups.\n// Each Excel file starts with a row where Details='Type'.\nconst groups = [];\nlet current = [];\nfor (const row of allRows) {\n  if (row.Details === 'Type' && current.length > 0) {\n    groups.push(current);\n    current = [];\n  }\n  current.push(row);\n}\nif (current.length > 0) groups.push(current);\n\nconst results = [];\nfor (let i = 0; i < groups.length; i++) {\n  const rows = groups[i];\n  const course = courses[i] || {};\n\n  // Assessment info: row with Details='Date' has assessment name, passing %, avg score\n  let assessmentName = '';\n  let passingPct = null;\n  let avgScore = null;\n  for (const row of rows) {\n    if (row.Details === 'Date' && row['Assessment Data']) {\n      assessmentName = row['Assessment Data'];\n      passingPct = typeof row.__EMPTY_2 === 'number' ? Math.round(row.__EMPTY_2) : null;\n      avgScore = typeof row.__EMPTY_3 === 'number' ? Math.round(row.__EMPTY_3 * 10) / 10 : null;\n      break;\n    }\n  }\n\n  // Students: find header row (Details='First Name'), then extract rows after it\n  const students = [];\n  let inStudents = false;\n  for (const row of rows) {\n    if (row.Details === 'First Name') {\n      inStudents = true;\n      continue;\n    }\n    if (inStudents) {\n      if (!row.Details) break;\n      students.push({\n        firstName: row.Details || '',\n        lastName: row.__EMPTY || '',\n        completedAssessment: row.__EMPTY_4 === true,\n        attempts: parseInt(row.__EMPTY_5) || 0,\n        score: typeof row.__EMPTY_6 === 'number' ? Math.round(row.__EMPTY_6 * 10) / 10 : null,\n        passed: row.__EMPTY_8 === true\n      });\n    }\n  }\n\n  results.push({\n    json: {\n      courseId: course.courseId || '',\n      courseTitle: course.title || '',\n      courseDate: course.date || '',\n      assessmentName,\n      passingPct,\n      avgScore,\n      students\n    }\n  });\n}\n\nreturn results;"
+      },
+      "id": "sr6b",
+      "name": "Extract Students",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3120,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst lines = [];\nlines.push(`\\ud83d\\udcca *Score Reports \\u2014 Last 30 days* (${items.length} course${items.length !== 1 ? 's' : ''})`);\nlines.push('');\nfor (const item of items) {\n  const d = item.json;\n  const students = d.students || [];\n  const passed = students.filter(s => s.passed).length;\n  const failed = students.filter(s => s.completedAssessment && !s.passed).length;\n  const notTaken = students.filter(s => !s.completedAssessment).length;\n  lines.push(`*${d.courseTitle} \\u2014 ${d.courseDate}*`);\n  if (d.assessmentName) {\n    const pct = d.passingPct != null ? ` | Threshold: ${d.passingPct}%` : '';\n    const avg = d.avgScore != null ? ` | Avg: ${d.avgScore}%` : '';\n    lines.push(`_${d.assessmentName}${pct}${avg}_`);\n  }\n  lines.push('');\n  for (const s of students) {\n    const name = (`${s.firstName} ${s.lastName}`).substring(0, 28).padEnd(28);\n    if (!s.completedAssessment) {\n      lines.push(`\\u2022 ${name}  \\u23f3 not taken`);\n    } else {\n      const result = s.passed ? '\\u2705 PASS' : '\\u274c FAIL';\n      const scoreStr = s.score != null ? `${s.score}%`.padStart(5) : '  N/A';\n      const attStr = s.attempts > 1 ? `(${s.attempts}x)` : '    ';\n      lines.push(`\\u2022 ${name}  ${scoreStr}  ${attStr}  ${result}`);\n    }\n  }\n  if (students.length > 0) {\n    lines.push('');\n    lines.push(`_\\u2705 ${passed} passed | \\u274c ${failed} failed${notTaken > 0 ? ` | \\u23f3 ${notTaken} not taken` : ''}_`);\n  } else {\n    lines.push('_No student data_');\n  }\n  lines.push('\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500');\n  lines.push('');\n}\nreturn [{ json: { text: lines.join('\\n') } }];"
+      },
+      "id": "sr7",
+      "name": "Build Slack Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3344,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "#qagile-bot"
+        },
+        "text": "={{ $json.text }}",
+        "otherOptions": {}
+      },
+      "id": "sr8",
+      "name": "Post to Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        3568,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { text: '\\ud83d\\udcca No courses with score reports found in the last 30 days.' } }];"
+      },
+      "id": "noReports",
+      "name": "No Reports Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2672,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.consentUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $json.cookies }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "login5b",
+      "name": "GET Consent Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1328,
+        -112
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract OAuth callback URL from consent page 302 and merge cookies\nconst resp = $input.first().json;\nconst headers = resp.headers || {};\nconst location = headers.location || '';\n\nconst prevCookies = $('Build Consent URL').first().json.cookies || '';\nconst setCookies = headers['set-cookie'] || [];\nconst cookieArr = Array.isArray(setCookies) ? setCookies : [setCookies];\nconst parsed = {};\nfor (const pair of prevCookies.split('; ')) {\n  const [k,...v] = pair.split('='); if (k) parsed[k] = v.join('=');\n}\nfor (const c of cookieArr) {\n  if (typeof c === 'string') { const p = c.split(';')[0].split('='); parsed[p[0]] = p.slice(1).join('='); }\n}\nconst mergedCookies = Object.entries(parsed).map(([k,v])=>k+'='+v).join('; ');\n\nif (!location) throw new Error('No redirect from consent page, status=' + resp.statusCode);\n\n// Merge www.scrum.org drupal/WAF cookies so the callback to www.scrum.org passes WAF\nconst drupalCookies = $('Build Login Body').first().json.drupalCookies || '';\nfor (const pair of drupalCookies.split('; ')) {\n  const [k,...v] = pair.split('='); if (k) parsed[k] = v.join('=');\n}\nconst finalCookies = Object.entries(parsed).map(([k,v])=>k+'='+v).join('; ');\n\nreturn [{json:{callbackUrl: location, cookies: finalCookies}}];"
+      },
+      "id": "login6b",
+      "name": "Build Callback URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        -112
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.callbackUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $json.cookies }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "login7c",
+      "name": "GET OAuth Callback",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1776,
+        -112
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.callbackUrl }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "={{ $json.cookies }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "login8",
+      "name": "GET Meta Refresh URL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1776,
+        -208
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Session cookie comes directly from Extract Redirect URL (browserless completed full login)\nconst d = $input.first().json;\nconst sessionCookie = d.sessionCookie || '';\nif (!sessionCookie) {\n  throw new Error('No SSESS cookie. Cookies: ' + (d.cookieStr || ''));\n}\nconst cookieStr = d.cookieStr || sessionCookie;\nreturn [{ json: { sessionCookie, cookieStr } }];"
+      },
+      "id": "login9",
+      "name": "Extract Session Cookie",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.fusionAuthUrl }}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "login1b",
+      "name": "Get FusionAuth Form",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -128,
+        -112
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const MONTH_MAP = {\n  'Jan': 'stycznia', 'Feb': 'lutego', 'Mar': 'marca', 'Apr': 'kwietnia',\n  'May': 'maja', 'Jun': 'czerwca', 'Jul': 'lipca', 'Aug': 'sierpnia',\n  'Sep': 'wrze\\u015bnia', 'Oct': 'pa\\u017adziernika', 'Nov': 'listopada', 'Dec': 'grudnia'\n};\n\nconst COURSE_MAP = {\n  'Applying Professional Scrum': { abbr: 'APS', id: '1h8PGDdsTbtJaYZLfx1RkYeprU54aA5epJ_v8IFJv7tA' },\n  'Professional Scrum Master - Advanced': { abbr: 'PSM-A', id: '1uSeglZgAnO_AKNyQX2QPqPl-CTlHzUEA-GpmlMV4Q0U' },\n  'Professional Scrum Master': { abbr: 'PSM', id: '1vlMyKfvHr7hkHAjTZAChvbcmsoOAsSvlC_KjGbE55a4' },\n  'Professional Scrum Product Owner - Advanced': { abbr: 'A-PSPO', id: '1ZhzKqyw0jaCWzrW65UM-qqElbydztawUvD-BqtMa25o' },\n  'Professional Scrum Product Owner - AI Essentials': { abbr: 'PSPO-AI', id: '1JSEW5y1_SV1ttYAa6hdTALfwoehWCGXFU1CbygrQ3sk' },\n  'Professional Scrum Product Owner': { abbr: 'PSPO', id: '1zrAgYWG2yLhtb8pjHIwWOckD4kJGiKcAY1-ckwhfK0s' },\n  'Professional Agile Leadership - Evidence-Based Management': { abbr: 'PAL-EBM', id: '1h4SsPZXaxOvhVKIF6sQ-fnhlj3bxhGvsmOsMemVU1ns' },\n  'Professional Agile Leadership - Essentials': { abbr: 'PAL-E', id: '1JqSy-I75r4T3nNHX8VBoAT56J74DzUqzp9OZbM3yoxo' },\n  'Scaled Professional Scrum': { abbr: 'SPS', id: '1Yr0ExrBOTjEztR9KJUuXlzghUE1sYb7-mfTFEzfi73k' },\n  'Professional Scrum with Kanban': { abbr: 'PSK', id: '1sRb-us30F8YJlF6WAzAEH07cNRTQHzPf8vW3TW1dzF8' },\n  'Team Kanban Practitioner': { abbr: 'TKP', id: '1oVM-h2IW0WgOv2MGr_D-G5Aokq0s6_oZAMMpGXsRCQ8' },\n  'Professional Scrum Facilitation Skills': { abbr: 'PSFS', id: '1Ho3uquyra5tXokyarsovBDlaIMUYNSdjoDU61l3dU-Q' }\n};\n\nconst PRIVATE_SHEET_ID = '1U_m-bpEmK5UbNNmzsYXwmJpDYVueCxp8z1sukNpPTMA';\n\nfunction parseDateToTabName(dateStr) {\n  const m = dateStr.match(/(\\w+)\\s+(\\d+(?:-\\d+)?),?\\s*\\d{4}/);\n  if (!m) return null;\n  const monthPl = MONTH_MAP[m[1]];\n  if (!monthPl) return null;\n  return m[2] + ' ' + monthPl;\n}\n\n// Sort by key length descending so more specific names match before shorter ones\n// e.g. 'Professional Scrum Product Owner - Advanced' before 'Professional Scrum Product Owner'\nconst sortedEntries = Object.entries(COURSE_MAP).sort((a, b) => b[0].length - a[0].length);\n\nfunction findCourseMapping(title) {\n  for (const [name, info] of sortedEntries) {\n    if (title.includes(name)) return { ...info, matchedKey: name };\n  }\n  return null;\n}\n\nconst results = [];\nfor (const item of $input.all()) {\n  const d = item.json;\n  const mapping = findCourseMapping(d.courseTitle);\n  const tabName = parseDateToTabName(d.courseDate);\n\n  let spreadsheetId, sheetTab, isPrivateCourse;\n  if (mapping) {\n    spreadsheetId = mapping.id;\n    sheetTab = tabName;\n    isPrivateCourse = false;\n  } else {\n    spreadsheetId = PRIVATE_SHEET_ID;\n    sheetTab = null;\n    isPrivateCourse = true;\n  }\n\n  results.push({ json: {\n    ...d,\n    spreadsheetId,\n    sheetTab,\n    isPrivateCourse,\n    courseAbbr: mapping ? mapping.abbr : 'PRIVATE',\n    tabSearchHint: tabName\n  }});\n}\n\nreturn results;"
+      },
+      "id": "gs_resolve",
+      "name": "Resolve Sheet Targets",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3344,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "gs_loop",
+      "name": "Loop Courses",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        3568,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Native googleSheets Read node returns rows as objects with header keys + row_number.\nconst course = $('Loop Courses').first().json;\nconst sheetRows = $input.all().map(i => i.json);\n\nif (sheetRows.length === 0) {\n  return [{ json: { skip: true, reason: 'Empty sheet', courseTitle: course.courseTitle, spreadsheetId: course.spreadsheetId, sheetTab: course.sheetTab } }];\n}\n\nconst sampleRow = sheetRows[0];\nconst keys = Object.keys(sampleRow).filter(k => k !== 'row_number');\n\nconst firstNameKey = keys.find(k => k.toLowerCase().includes('imi') && !k.toLowerCase().includes('nazwisko') && !k.toLowerCase().includes('i nazwisko')) || keys[0];\nconst lastNameKey = keys.find(k => k.toLowerCase().includes('nazwisko') && !k.toLowerCase().includes('i nazwisko')) || keys[1];\nconst emailKey = keys.find(k => k.toLowerCase().includes('email'));\n\n// Determine assessment column index (0-based)\n// If 'Egzamin' header already exists, use its position; otherwise append after last column\nconst hasEgzamin = keys.includes('Egzamin');\nlet assessCol;\nif (hasEgzamin) {\n  assessCol = keys.indexOf('Egzamin');\n} else {\n  assessCol = keys.length; // append after last header\n}\n\nconst students = course.students || [];\nconst results = [];\nconst unmatched = [];\n\nfor (const student of students) {\n  const fn = (student.firstName || '').trim().toLowerCase();\n  const ln = (student.lastName || '').trim().toLowerCase();\n\n  let matchedRow = null;\n  for (const row of sheetRows) {\n    const cellFn = (row[firstNameKey] || '').trim().toLowerCase();\n    const cellLn = (row[lastNameKey] || '').trim().toLowerCase();\n    if (cellFn === fn && cellLn === ln) { matchedRow = row; break; }\n  }\n\n  if (!matchedRow && emailKey) {\n    const email = (student.email || '').trim().toLowerCase();\n    if (email) matchedRow = sheetRows.find(r => (r[emailKey] || '').trim().toLowerCase() === email) || null;\n  }\n\n  if (!matchedRow) { unmatched.push(student.firstName + ' ' + student.lastName); continue; }\n\n  // Skip if already filled\n  if (hasEgzamin && matchedRow['Egzamin'] && matchedRow['Egzamin'].toString().trim() !== '') continue;\n\n  const scoreStr = student.score != null ? student.score + '%' : '\\u2014';\n  const passedStr = student.completedAssessment ? (student.passed ? 'TAK' : 'NIE') : '\\u2014';\n  const attemptsStr = student.attempts > 0 ? String(student.attempts) : '\\u2014';\n\n  results.push({ json: {\n    spreadsheetId: course.spreadsheetId,\n    sheetTab: course.sheetTab,\n    row_number: matchedRow.row_number,\n    assessCol,\n    needsHeader: !hasEgzamin,\n    'Egzamin': course.assessmentName || '\\u2014',\n    'Wynik': scoreStr,\n    'Pr\\u00f3by': attemptsStr,\n    'Zda\\u0142/a': passedStr\n  }});\n}\n\nif (unmatched.length > 0) console.log('Unmatched:', unmatched.join(', '));\n\nif (results.length === 0) {\n  return [{ json: { skip: true, reason: 'No students to update', courseTitle: course.courseTitle, spreadsheetId: course.spreadsheetId, sheetTab: course.sheetTab } }];\n}\n\nreturn results;"
+      },
+      "id": "gs_match",
+      "name": "Match Students",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4016,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "skip1",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gs_skip",
+      "name": "Skip If No Updates",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4016,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.spreadsheetId }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $json.sheetTab }}"
+        },
+        "options": {}
+      },
+      "id": "gs_read2",
+      "name": "Read Sheet Tab",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3792,
+        -320
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const course = $('Loop Courses').first().json;\nconst item = $input.first().json;\nconst msg = item.error?.message || item.message || item.description || JSON.stringify(item);\nconsole.warn(`[${course.courseAbbr}] Sheet tab \"${course.sheetTab}\" not found — skipping. Error: ${msg}`);\n// Return skip item so the loop continues gracefully\nreturn [{ json: { skip: true, reason: `Tab \"${course.sheetTab}\" not found in ${course.courseAbbr} spreadsheet`, courseTitle: course.courseTitle, spreadsheetId: course.spreadsheetId, sheetTab: course.sheetTab } }];"
+      },
+      "id": "gs_read_err",
+      "name": "Handle Read Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3792,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nif (items.length === 0) return [];\n\nconst first = items[0].json;\nconst spreadsheetId = first.spreadsheetId;\nconst sheetTab = first.sheetTab;\nconst assessCol = first.assessCol;\n\nfunction colLetter(idx) {\n  let s = '', n = idx;\n  while (n >= 0) { s = String.fromCharCode(65 + (n % 26)) + s; n = Math.floor(n / 26) - 1; }\n  return s;\n}\n\nconst data = [];\n\n// Add header row if this is a new assessment column (assessCol points beyond existing headers)\n// We detect this by checking if any item has a row_number — if assessCol >= keys in sheet,\n// we need headers. Pass a flag from Match Students to know.\n// Simple heuristic: if assessCol is not -1 and first item signals needsHeader\nif (first.needsHeader) {\n  const startCol = colLetter(assessCol);\n  const endCol = colLetter(assessCol + 3);\n  data.push({\n    range: `'${sheetTab}'!${startCol}1:${endCol}1`,\n    values: [['Egzamin', 'Wynik', 'Pr\\u00f3by', 'Zda\\u0142/a']]\n  });\n}\n\nfor (const item of items) {\n  const d = item.json;\n  const rowNum = d.row_number;\n  const startCol = colLetter(assessCol);\n  const endCol = colLetter(assessCol + 3);\n  data.push({\n    range: `'${sheetTab}'!${startCol}${rowNum}:${endCol}${rowNum}`,\n    values: [[d['Egzamin'], d['Wynik'], d['Pr\\u00f3by'], d['Zda\\u0142/a']]]\n  });\n}\n\nreturn [{ json: { spreadsheetId, data } }];"
+      },
+      "id": "gs_collect",
+      "name": "Collect Updates",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4240,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://sheets.googleapis.com/v4/spreadsheets/{{ $json.spreadsheetId }}/values:batchUpdate",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSheetsOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ valueInputOption: 'USER_ENTERED', data: $json.data }) }}",
+        "options": {}
+      },
+      "id": "gs_write3",
+      "name": "Write Assessment Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4464,
+        -320
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Respond to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking Execute workflow": {
+      "main": [
+        [
+          {
+            "node": "Respond to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Login Page": {
+      "main": [
+        [
+          {
+            "node": "Extract Login Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Credentials": {
+      "main": [
+        [
+          {
+            "node": "Build Login Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Login Body": {
+      "main": [
+        [
+          {
+            "node": "Post Login Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Login Form": {
+      "main": [
+        [
+          {
+            "node": "Extract Redirect URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Complete Registration": {
+      "main": [
+        [
+          {
+            "node": "Build Consent URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Course List": {
+      "main": [
+        [
+          {
+            "node": "Parse Course List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Course List": {
+      "main": [
+        [
+          {
+            "node": "Has Score Reports?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Score Reports?": {
+      "main": [
+        [
+          {
+            "node": "Download Score Report",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Reports Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Score Report": {
+      "main": [
+        [
+          {
+            "node": "Parse Excel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Excel": {
+      "main": [
+        [
+          {
+            "node": "Extract Students",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Students": {
+      "main": [
+        [
+          {
+            "node": "Build Slack Message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Resolve Sheet Targets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Slack Message": {
+      "main": [
+        [
+          {
+            "node": "Post to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Reports Message": {
+      "main": [
+        [
+          {
+            "node": "Post to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Consent URL": {
+      "main": [
+        [
+          {
+            "node": "GET Consent Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Consent Page": {
+      "main": [
+        [
+          {
+            "node": "Build Callback URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Callback URL": {
+      "main": [
+        [
+          {
+            "node": "GET OAuth Callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET OAuth Callback": {
+      "main": [
+        [
+          {
+            "node": "Parse Meta Refresh",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Session Cookie": {
+      "main": [
+        [
+          {
+            "node": "Fetch Course List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Meta Refresh": {
+      "main": [
+        [
+          {
+            "node": "GET Meta Refresh URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get FusionAuth Form": {
+      "main": [
+        [
+          {
+            "node": "Read Credentials",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve Sheet Targets": {
+      "main": [
+        [
+          {
+            "node": "Loop Courses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Match Students": {
+      "main": [
+        [
+          {
+            "node": "Skip If No Updates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skip If No Updates": {
+      "main": [
+        [
+          {
+            "node": "Loop Courses",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Collect Updates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Courses": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Read Sheet Tab",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Sheet Tab": {
+      "main": [
+        [
+          {
+            "node": "Match Students",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle Read Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Read Error": {
+      "main": [
+        [
+          {
+            "node": "Skip If No Updates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Updates": {
+      "main": [
+        [
+          {
+            "node": "Write Assessment Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Assessment Data": {
+      "main": [
+        [
+          {
+            "node": "Loop Courses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Redirect URL": {
+      "main": [
+        [
+          {
+            "node": "Extract Session Cookie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Slack": {
+      "main": [
+        [
+          {
+            "node": "Read Credentials",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "binaryMode": "separate"
+  },
+  "activeVersionId": "7d2d00ed-da83-477e-9da9-6ff3ce394a68",
+  "versionCounter": 485,
+  "shared": [
+    {
+      "updatedAt": "2026-04-05T21:32:25.409Z",
+      "createdAt": "2026-04-05T21:32:25.409Z",
+      "role": "workflow:owner",
+      "workflowId": "CQ6zEuIEIDS67Tjf",
+      "projectId": "BgKOdyk040DxPHte",
+      "project": {
+        "updatedAt": "2025-09-08T23:44:44.373Z",
+        "createdAt": "2025-09-08T16:48:28.019Z",
+        "id": "BgKOdyk040DxPHte",
+        "name": "Krystian Kaczor <krystian.kaczor@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "d20c49d1-e72b-4b77-8ef9-db89288460b0"
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-05-06T14:11:15.886Z",
+    "createdAt": "2026-05-06T14:11:15.886Z",
+    "versionId": "7d2d00ed-da83-477e-9da9-6ff3ce394a68",
+    "workflowId": "CQ6zEuIEIDS67Tjf",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "score-reports",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "sr1",
+        "name": "Webhook Trigger",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -800,
+          -16
+        ]
+      },
+      {
+        "parameters": {
+          "respondWith": "text",
+          "responseBody": "Fetching score reports... results will appear in #qagile-bot shortly.",
+          "options": {
+            "responseCode": 200
+          }
+        },
+        "id": "sr2",
+        "name": "Respond to Slack",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          -576,
+          -112
+        ]
+      },
+      {
+        "parameters": {},
+        "id": "sr9",
+        "name": "When clicking Execute workflow",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          -800,
+          -208
+        ]
+      },
+      {
+        "parameters": {
+          "url": "http://browserless:3000/function/?token=6R0W53R135510",
+          "options": {
+            "response": {
+              "response": {
+                "fullResponse": false,
+                "neverError": false,
+                "responseFormat": "json"
+              }
+            }
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Accept",
+                "value": "*/*"
+              }
+            ]
+          },
+          "method": "POST",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "{\n  \"code\": \"export default async ({ page, context }) => {\\n  const loginId = context.loginId;\\n  const password = context.password;\\n\\n  await page.setExtraHTTPHeaders({\\n    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',\\n    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',\\n    'Accept-Language': 'en-US,en;q=0.9,pl;q=0.8'\\n  });\\n\\n  // Navigate to scrum.org login — Chromium handles WAF JS challenge automatically\\n  await page.goto('https://www.scrum.org/user/login?destination=/admin/courses/manage', {\\n    waitUntil: 'networkidle2', timeout: 30000\\n  });\\n  try { await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }); } catch(_) {}\\n\\n  // Should now be at FusionAuth login form\\n  const afterGotoUrl = page.url();\\n\\n  if (loginId && password && afterGotoUrl.includes('accounts.scrum.org')) {\\n    // Fill and submit credentials\\n    try {\\n      await page.waitForSelector('input[name=\\\"loginId\\\"], input[type=\\\"email\\\"]', { timeout: 8000 });\\n      await page.type('input[name=\\\"loginId\\\"], input[type=\\\"email\\\"]', loginId);\\n      await page.type('input[name=\\\"password\\\"], input[type=\\\"password\\\"]', password);\\n      await Promise.all([\\n        page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }),\\n        page.click('button[type=\\\"submit\\\"], input[type=\\\"submit\\\"]')\\n      ]);\\n      // Handle any additional redirects (consent, complete-registration)\\n      try { await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }); } catch(_) {}\\n    } catch(e) {\\n      // Credential fill failed — fall through and return what we have\\n    }\\n  }\\n\\n  const finalUrl = page.url();\\n  const allCookies = await page.cookies();\\n\\n  const drupalCookies = allCookies.filter(c => c.domain.includes('scrum.org'));\\n  const drupalCookieStr = drupalCookies.map(c => c.name + '=' + c.value).join('; ');\\n  const ssessCookie = drupalCookies.find(c => c.name.startsWith('SSESS'));\\n  const drupalSessionCookie = ssessCookie ? ssessCookie.name + '=' + ssessCookie.value : '';\\n\\n  const faCookies = allCookies.filter(c => c.domain.includes('accounts.scrum.org'));\\n  const faCookieStr = faCookies.map(c => c.name + '=' + c.value).join('; ');\\n\\n  let fusionAuthHtml = '';\\n  try { fusionAuthHtml = await page.content(); } catch(_) {}\\n\\n  // fusionAuthUrl = where we ended up after WAF (pre-login), for fallback\\n  const fusionAuthUrl = afterGotoUrl.includes('accounts.scrum.org') ? afterGotoUrl : '';\\n\\n  return {\\n    data: {\\n      fusionAuthUrl,\\n      drupalCookies: drupalCookieStr,\\n      drupalSessionCookie,\\n      faCookies: faCookieStr,\\n      fusionAuthHtml,\\n      currentUrl: finalUrl,\\n      loginAttempted: !!(loginId && password)\\n    }\\n  };\\n};\"\n}"
+        },
+        "id": "login1",
+        "name": "Get Login Page",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -576,
+          -112
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// Browserless /function returns Puppeteer result directly as JSON.\n// fusionAuthUrl + drupalCookies already extracted by headless Chrome — no header parsing needed.\nconst raw = $input.first().json;\nconst resp = raw.data || raw;\nconst fusionAuthUrl = resp.fusionAuthUrl || '';\nconst drupalCookieStr = resp.drupalCookies || '';\nconst drupalSessionCookie = resp.drupalSessionCookie || '';\n\nif (!fusionAuthUrl) {\n  throw new Error('Browserless: No FusionAuth URL captured. currentUrl=' + (resp.currentUrl || 'unknown'));\n}\n\nreturn [{json: {\n  fusionAuthUrl,\n  drupalCookies: drupalCookieStr,\n  drupalSessionCookie,\n  faCookies: resp.faCookies || '',\n  fusionAuthHtml: resp.fusionAuthHtml || '',\n  statusCode: 302\n}}];"
+        },
+        "id": "login2",
+        "name": "Extract Login Form",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -352,
+          -112
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "R1ea8DGVBUhDqa5M"
+          },
+          "matchType": "allConditions",
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "service",
+                "keyValue": "scrum.org"
+              }
+            ]
+          },
+          "limit": 1
+        },
+        "id": "readCreds",
+        "name": "Read Credentials",
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1,
+        "position": [
+          96,
+          -112
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const creds = $input.first().json;\nreturn [{ json: { loginId: creds.username, password: creds.password } }];"
+        },
+        "id": "login2b",
+        "name": "Build Login Body",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          320,
+          -112
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "http://browserless:3000/function/?token=6R0W53R135510&timeout=90000",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Accept",
+                "value": "*/*"
+              }
+            ]
+          },
+          "sendBody": true,
+          "contentType": "json",
+          "specifyBody": "json",
+          "jsonBody": "={{ (() => { const d = $json; return JSON.stringify({ code: `export default async ({ page, context }) => {\\n  const { loginId, password } = context;\\n\\n  await page.setExtraHTTPHeaders({\\n    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',\\n    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',\\n    'Accept-Language': 'en-US,en;q=0.9,pl;q=0.8'\\n  });\\n\\n  await page.goto('https://www.scrum.org/user/login?destination=/admin/courses/manage', { waitUntil: 'networkidle2', timeout: 30000 });\\n  try { await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }); } catch(_) {}\\n\\n  await page.waitForSelector('input[name=loginId], input[type=email]', { timeout: 15000 });\\n  await page.type('input[name=loginId], input[type=email]', loginId, { delay: 30 });\\n  await page.type('input[name=password], input[type=password]', password, { delay: 30 });\\n\\n  await Promise.all([\\n    page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 30000 }),\\n    page.click('button.form-submit, button[type=submit], input[type=submit]')\\n  ]);\\n\\n  try { await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }); } catch(_) {}\\n  try { await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 10000 }); } catch(_) {}\\n\\n  const finalUrl = page.url();\\n  const allCookies = await page.cookies();\\n  const scrumCookies = allCookies.filter(c => c.domain.includes('scrum.org') && !c.domain.includes('accounts'));\\n  const ssess = scrumCookies.find(c => c.name.startsWith('SSESS'));\\n  const sessionCookie = ssess ? ssess.name + '=' + ssess.value : '';\\n  const cookieStr = scrumCookies.map(c => c.name + '=' + c.value).join('; ');\\n\\n  return { data: { sessionCookie, cookieStr, finalUrl, scrumDomainCookies: scrumCookies.map(c=>c.name) } };\\n};`, context: { loginId: d.loginId, password: d.password } }); })() }}",
+          "options": {
+            "response": {
+              "response": {
+                "fullResponse": false,
+                "neverError": false,
+                "responseFormat": "json"
+              }
+            }
+          }
+        },
+        "id": "login3",
+        "name": "Post Login Form",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          544,
+          -112
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// Post Login Form is now a browserless call that returns sessionCookie directly\nconst raw = $input.first().json;\nconst resp = raw.data || raw;\nconst sessionCookie = resp.sessionCookie || '';\nconst cookieStr = resp.cookieStr || '';\nconst finalUrl = resp.finalUrl || '';\n\nif (!sessionCookie) {\n  throw new Error('Browserless login: no SSESS cookie returned. finalUrl=' + finalUrl + ' cookies=' + cookieStr);\n}\n\nreturn [{ json: { sessionCookie, cookieStr, finalUrl } }];"
+        },
+        "id": "login4",
+        "name": "Extract Redirect URL",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          768,
+          -112
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.redirectUrl }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Cookie",
+                "value": "={{ $json.cookies }}"
+              }
+            ]
+          },
+          "options": {
+            "redirect": {
+              "redirect": {
+                "followRedirects": false
+              }
+            },
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "neverError": true,
+                "responseFormat": "json"
+              }
+            }
+          }
+        },
+        "id": "login5",
+        "name": "GET Complete Registration",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          992,
+          -112
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "const resp = $input.first().json;\nconst headers = resp.headers || {};\nconst location = headers.location || '';\nconst prevCookies = $('Extract Redirect URL').first().json.cookies || '';\nconst setCookies = headers['set-cookie'] || [];\nconst cookieArr = Array.isArray(setCookies) ? setCookies : [setCookies];\nconst parsed = {};\nfor (const pair of prevCookies.split('; ')) {\n  const [k,...v] = pair.split('=');\n  if (k) parsed[k] = v.join('=');\n}\nfor (const c of cookieArr) {\n  if (typeof c === 'string') {\n    const parts = c.split(';')[0].split('=');\n    parsed[parts[0]] = parts.slice(1).join('=');\n  }\n}\nconst mergedCookies = Object.entries(parsed).map(([k,v]) => k+'='+v).join('; ');\nlet consentUrl = location;\nif (consentUrl.startsWith('/')) consentUrl = 'https://accounts.scrum.org' + consentUrl;\nreturn [{json:{consentUrl, cookies: mergedCookies, status: resp.statusCode}}];"
+        },
+        "id": "login6",
+        "name": "Build Consent URL",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1216,
+          -112
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// OAuth callback returns meta-refresh to /user/login?destination=...\n// Extract destination and carry Drupal cookies for the callback\nconst resp = $input.first().json;\nconst body = resp.body || resp.data || '';\nconst headers = resp.headers || {};\n\n// Get Drupal cookies from initial login page\nconst drupalCookies = $('Build Login Body').first().json.drupalCookies || '';\n\n// Merge all cookies\nconst prevCookies = $('Build Callback URL').first().json.cookies || '';\nconst setCookies = headers['set-cookie'] || [];\nconst cookieArr = Array.isArray(setCookies) ? setCookies : [setCookies];\nconst parsed = {};\nfor (const pair of prevCookies.split('; ')) {\n  const [k,...v] = pair.split('='); if (k) parsed[k] = v.join('=');\n}\nfor (const c of cookieArr) {\n  if (typeof c === 'string') { const p = c.split(';')[0].split('='); parsed[p[0]] = p.slice(1).join('='); }\n}\nfor (const pair of drupalCookies.split('; ')) {\n  const [k,...v] = pair.split('='); if (k) parsed[k] = v.join('=');\n}\nconst mergedCookies = Object.entries(parsed).map(([k,v]) => k + '=' + v).join('; ');\n\n// Parse meta-refresh URL\nconst metaMatch = body.match(/url='([^']+)'/) || body.match(/url=([^\\\"'\\s>]+)/i);\nif (!metaMatch) throw new Error('No meta-refresh URL found. Status=' + resp.statusCode);\nlet fullUrl = metaMatch[1].replace(/&amp;/g, '&');\nif (fullUrl.startsWith('/')) fullUrl = 'https://www.scrum.org' + fullUrl;\n\n// Extract destination param using regex (more reliable than URL parser in n8n)\nlet callbackUrl = fullUrl;\nconst destMatch = fullUrl.match(/[?&]destination=([^&]+)/);\nif (destMatch) {\n  const destination = decodeURIComponent(destMatch[1]);\n  callbackUrl = 'https://www.scrum.org/' + destination.replace(/^\\//, '');\n}\n\nreturn [{json: {callbackUrl, cookies: mergedCookies, drupalCookies, originalUrl: fullUrl, destFound: !!destMatch}}];"
+        },
+        "id": "login7",
+        "name": "Parse Meta Refresh",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1440,
+          -112
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "url": "https://www.scrum.org/admin/courses/manage",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "node_date_range_start",
+                "value": "={{ $now.minus({days:30}).toFormat('yyyy-MM-dd') }}"
+              },
+              {
+                "name": "node_date_range_end",
+                "value": "={{ $now.toFormat('yyyy-MM-dd') }}"
+              }
+            ]
+          },
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Cookie",
+                "value": "={{ $('Extract Session Cookie').first().json.cookieStr }}"
+              },
+              {
+                "name": "User-Agent",
+                "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+              },
+              {
+                "name": "Accept",
+                "value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "text"
+              }
+            }
+          }
+        },
+        "id": "sr3",
+        "name": "Fetch Course List",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2224,
+          -112
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const html = $input.first().json.data || '';\nconst courses = [];\n\nconst rows = html.split('<tr>');\nfor (let i = 1; i < rows.length; i++) {\n  const row = rows[i];\n  \n  const scoreMatch = row.match(/score-report\\?courseId=([a-f0-9\\-]+)/);\n  if (!scoreMatch) continue;\n  const courseId = scoreMatch[1];\n  \n  const titleMatch = row.match(/views-field-title[\\s\\S]*?<a[^>]*>([^<]+)<\\/a>/);\n  const title = titleMatch ? titleMatch[1].trim() : 'Unknown';\n  \n  // Student count: look for the actual number after the emoji entity\n  // HTML: <span class=\"student-count-tag\">&#128100; 15</span>\n  const studentTagMatch = row.match(/student-count-tag[^>]*>&#\\d+;\\s*(\\d+)/);\n  const studentCount = studentTagMatch ? parseInt(studentTagMatch[1]) : 0;\n  \n  const dateMatch = row.match(/views-field-course-date-range[^>]*>\\s*([^<]+)</);\n  const date = dateMatch ? dateMatch[1].trim() : '';\n  \n  const statusMatch = row.match(/views-field-course-status-combined[^>]*>\\s*([^<]+)</);\n  const status = statusMatch ? statusMatch[1].trim() : '';\n  \n  courses.push({ json: { courseId, title, date, studentCount, status, _hasReport: true } });\n}\n\nif (courses.length === 0) {\n  return [{ json: { _empty: true, message: 'No courses with score reports found in last 30 days' } }];\n}\nreturn courses;"
+        },
+        "id": "sr4",
+        "name": "Parse Course List",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2224,
+          -112
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "version": 2,
+              "leftValue": "",
+              "caseSensitive": true,
+              "typeValidation": "loose"
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "1",
+                "leftValue": "={{ $json._hasReport }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "ifHasCourses",
+        "name": "Has Score Reports?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          2448,
+          -112
+        ]
+      },
+      {
+        "parameters": {
+          "url": "=https://www.scrum.org/trainers/score-report?courseId={{ $json.courseId }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Cookie",
+                "value": "={{ $('Extract Session Cookie').first().json.cookieStr }}"
+              },
+              {
+                "name": "User-Agent",
+                "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "id": "sr5",
+        "name": "Download Score Report",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2672,
+          -112
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "xlsx",
+          "options": {}
+        },
+        "id": "sr6",
+        "name": "Parse Excel",
+        "type": "n8n-nodes-base.extractFromFile",
+        "typeVersion": 1,
+        "position": [
+          2896,
+          -112
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const courses = $('Parse Course List').all().map(i => i.json);\nconst allRows = $input.all().map(i => i.json);\n\n// Split the flat row stream into per-course groups.\n// Each Excel file starts with a row where Details='Type'.\nconst groups = [];\nlet current = [];\nfor (const row of allRows) {\n  if (row.Details === 'Type' && current.length > 0) {\n    groups.push(current);\n    current = [];\n  }\n  current.push(row);\n}\nif (current.length > 0) groups.push(current);\n\nconst results = [];\nfor (let i = 0; i < groups.length; i++) {\n  const rows = groups[i];\n  const course = courses[i] || {};\n\n  // Assessment info: row with Details='Date' has assessment name, passing %, avg score\n  let assessmentName = '';\n  let passingPct = null;\n  let avgScore = null;\n  for (const row of rows) {\n    if (row.Details === 'Date' && row['Assessment Data']) {\n      assessmentName = row['Assessment Data'];\n      passingPct = typeof row.__EMPTY_2 === 'number' ? Math.round(row.__EMPTY_2) : null;\n      avgScore = typeof row.__EMPTY_3 === 'number' ? Math.round(row.__EMPTY_3 * 10) / 10 : null;\n      break;\n    }\n  }\n\n  // Students: find header row (Details='First Name'), then extract rows after it\n  const students = [];\n  let inStudents = false;\n  for (const row of rows) {\n    if (row.Details === 'First Name') {\n      inStudents = true;\n      continue;\n    }\n    if (inStudents) {\n      if (!row.Details) break;\n      students.push({\n        firstName: row.Details || '',\n        lastName: row.__EMPTY || '',\n        completedAssessment: row.__EMPTY_4 === true,\n        attempts: parseInt(row.__EMPTY_5) || 0,\n        score: typeof row.__EMPTY_6 === 'number' ? Math.round(row.__EMPTY_6 * 10) / 10 : null,\n        passed: row.__EMPTY_8 === true\n      });\n    }\n  }\n\n  results.push({\n    json: {\n      courseId: course.courseId || '',\n      courseTitle: course.title || '',\n      courseDate: course.date || '',\n      assessmentName,\n      passingPct,\n      avgScore,\n      students\n    }\n  });\n}\n\nreturn results;"
+        },
+        "id": "sr6b",
+        "name": "Extract Students",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3120,
+          -112
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\nconst lines = [];\nlines.push(`\\ud83d\\udcca *Score Reports \\u2014 Last 30 days* (${items.length} course${items.length !== 1 ? 's' : ''})`);\nlines.push('');\nfor (const item of items) {\n  const d = item.json;\n  const students = d.students || [];\n  const passed = students.filter(s => s.passed).length;\n  const failed = students.filter(s => s.completedAssessment && !s.passed).length;\n  const notTaken = students.filter(s => !s.completedAssessment).length;\n  lines.push(`*${d.courseTitle} \\u2014 ${d.courseDate}*`);\n  if (d.assessmentName) {\n    const pct = d.passingPct != null ? ` | Threshold: ${d.passingPct}%` : '';\n    const avg = d.avgScore != null ? ` | Avg: ${d.avgScore}%` : '';\n    lines.push(`_${d.assessmentName}${pct}${avg}_`);\n  }\n  lines.push('');\n  for (const s of students) {\n    const name = (`${s.firstName} ${s.lastName}`).substring(0, 28).padEnd(28);\n    if (!s.completedAssessment) {\n      lines.push(`\\u2022 ${name}  \\u23f3 not taken`);\n    } else {\n      const result = s.passed ? '\\u2705 PASS' : '\\u274c FAIL';\n      const scoreStr = s.score != null ? `${s.score}%`.padStart(5) : '  N/A';\n      const attStr = s.attempts > 1 ? `(${s.attempts}x)` : '    ';\n      lines.push(`\\u2022 ${name}  ${scoreStr}  ${attStr}  ${result}`);\n    }\n  }\n  if (students.length > 0) {\n    lines.push('');\n    lines.push(`_\\u2705 ${passed} passed | \\u274c ${failed} failed${notTaken > 0 ? ` | \\u23f3 ${notTaken} not taken` : ''}_`);\n  } else {\n    lines.push('_No student data_');\n  }\n  lines.push('\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500');\n  lines.push('');\n}\nreturn [{ json: { text: lines.join('\\n') } }];"
+        },
+        "id": "sr7",
+        "name": "Build Slack Message",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3344,
+          -112
+        ]
+      },
+      {
+        "parameters": {
+          "select": "channel",
+          "channelId": {
+            "__rl": true,
+            "mode": "name",
+            "value": "#qagile-bot"
+          },
+          "text": "={{ $json.text }}",
+          "otherOptions": {}
+        },
+        "id": "sr8",
+        "name": "Post to Slack",
+        "type": "n8n-nodes-base.slack",
+        "typeVersion": 2.3,
+        "position": [
+          3568,
+          -112
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "return [{ json: { text: '\\ud83d\\udcca No courses with score reports found in the last 30 days.' } }];"
+        },
+        "id": "noReports",
+        "name": "No Reports Message",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2672,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.consentUrl }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Cookie",
+                "value": "={{ $json.cookies }}"
+              }
+            ]
+          },
+          "options": {
+            "redirect": {
+              "redirect": {
+                "followRedirects": false
+              }
+            },
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "neverError": true,
+                "responseFormat": "text"
+              }
+            }
+          }
+        },
+        "id": "login5b",
+        "name": "GET Consent Page",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1328,
+          -112
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// Extract OAuth callback URL from consent page 302 and merge cookies\nconst resp = $input.first().json;\nconst headers = resp.headers || {};\nconst location = headers.location || '';\n\nconst prevCookies = $('Build Consent URL').first().json.cookies || '';\nconst setCookies = headers['set-cookie'] || [];\nconst cookieArr = Array.isArray(setCookies) ? setCookies : [setCookies];\nconst parsed = {};\nfor (const pair of prevCookies.split('; ')) {\n  const [k,...v] = pair.split('='); if (k) parsed[k] = v.join('=');\n}\nfor (const c of cookieArr) {\n  if (typeof c === 'string') { const p = c.split(';')[0].split('='); parsed[p[0]] = p.slice(1).join('='); }\n}\nconst mergedCookies = Object.entries(parsed).map(([k,v])=>k+'='+v).join('; ');\n\nif (!location) throw new Error('No redirect from consent page, status=' + resp.statusCode);\n\n// Merge www.scrum.org drupal/WAF cookies so the callback to www.scrum.org passes WAF\nconst drupalCookies = $('Build Login Body').first().json.drupalCookies || '';\nfor (const pair of drupalCookies.split('; ')) {\n  const [k,...v] = pair.split('='); if (k) parsed[k] = v.join('=');\n}\nconst finalCookies = Object.entries(parsed).map(([k,v])=>k+'='+v).join('; ');\n\nreturn [{json:{callbackUrl: location, cookies: finalCookies}}];"
+        },
+        "id": "login6b",
+        "name": "Build Callback URL",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1552,
+          -112
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.callbackUrl }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Cookie",
+                "value": "={{ $json.cookies }}"
+              }
+            ]
+          },
+          "options": {
+            "redirect": {
+              "redirect": {
+                "followRedirects": false
+              }
+            },
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "neverError": true,
+                "responseFormat": "text"
+              }
+            }
+          }
+        },
+        "id": "login7c",
+        "name": "GET OAuth Callback",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1776,
+          -112
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.callbackUrl }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Cookie",
+                "value": "={{ $json.cookies }}"
+              }
+            ]
+          },
+          "options": {
+            "redirect": {
+              "redirect": {
+                "followRedirects": false
+              }
+            },
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "neverError": true,
+                "responseFormat": "text"
+              }
+            }
+          }
+        },
+        "id": "login8",
+        "name": "GET Meta Refresh URL",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1776,
+          -208
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// Session cookie comes directly from Extract Redirect URL (browserless completed full login)\nconst d = $input.first().json;\nconst sessionCookie = d.sessionCookie || '';\nif (!sessionCookie) {\n  throw new Error('No SSESS cookie. Cookies: ' + (d.cookieStr || ''));\n}\nconst cookieStr = d.cookieStr || sessionCookie;\nreturn [{ json: { sessionCookie, cookieStr } }];"
+        },
+        "id": "login9",
+        "name": "Extract Session Cookie",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2000,
+          -112
+        ]
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.fusionAuthUrl }}",
+          "options": {
+            "redirect": {
+              "redirect": {}
+            },
+            "response": {
+              "response": {
+                "fullResponse": true,
+                "responseFormat": "text"
+              }
+            }
+          }
+        },
+        "id": "login1b",
+        "name": "Get FusionAuth Form",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          -128,
+          -112
+        ],
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "const MONTH_MAP = {\n  'Jan': 'stycznia', 'Feb': 'lutego', 'Mar': 'marca', 'Apr': 'kwietnia',\n  'May': 'maja', 'Jun': 'czerwca', 'Jul': 'lipca', 'Aug': 'sierpnia',\n  'Sep': 'wrze\\u015bnia', 'Oct': 'pa\\u017adziernika', 'Nov': 'listopada', 'Dec': 'grudnia'\n};\n\nconst COURSE_MAP = {\n  'Applying Professional Scrum': { abbr: 'APS', id: '1h8PGDdsTbtJaYZLfx1RkYeprU54aA5epJ_v8IFJv7tA' },\n  'Professional Scrum Master - Advanced': { abbr: 'PSM-A', id: '1uSeglZgAnO_AKNyQX2QPqPl-CTlHzUEA-GpmlMV4Q0U' },\n  'Professional Scrum Master': { abbr: 'PSM', id: '1vlMyKfvHr7hkHAjTZAChvbcmsoOAsSvlC_KjGbE55a4' },\n  'Professional Scrum Product Owner - Advanced': { abbr: 'A-PSPO', id: '1ZhzKqyw0jaCWzrW65UM-qqElbydztawUvD-BqtMa25o' },\n  'Professional Scrum Product Owner - AI Essentials': { abbr: 'PSPO-AI', id: '1JSEW5y1_SV1ttYAa6hdTALfwoehWCGXFU1CbygrQ3sk' },\n  'Professional Scrum Product Owner': { abbr: 'PSPO', id: '1zrAgYWG2yLhtb8pjHIwWOckD4kJGiKcAY1-ckwhfK0s' },\n  'Professional Agile Leadership - Evidence-Based Management': { abbr: 'PAL-EBM', id: '1h4SsPZXaxOvhVKIF6sQ-fnhlj3bxhGvsmOsMemVU1ns' },\n  'Professional Agile Leadership - Essentials': { abbr: 'PAL-E', id: '1JqSy-I75r4T3nNHX8VBoAT56J74DzUqzp9OZbM3yoxo' },\n  'Scaled Professional Scrum': { abbr: 'SPS', id: '1Yr0ExrBOTjEztR9KJUuXlzghUE1sYb7-mfTFEzfi73k' },\n  'Professional Scrum with Kanban': { abbr: 'PSK', id: '1sRb-us30F8YJlF6WAzAEH07cNRTQHzPf8vW3TW1dzF8' },\n  'Team Kanban Practitioner': { abbr: 'TKP', id: '1oVM-h2IW0WgOv2MGr_D-G5Aokq0s6_oZAMMpGXsRCQ8' },\n  'Professional Scrum Facilitation Skills': { abbr: 'PSFS', id: '1Ho3uquyra5tXokyarsovBDlaIMUYNSdjoDU61l3dU-Q' }\n};\n\nconst PRIVATE_SHEET_ID = '1U_m-bpEmK5UbNNmzsYXwmJpDYVueCxp8z1sukNpPTMA';\n\nfunction parseDateToTabName(dateStr) {\n  const m = dateStr.match(/(\\w+)\\s+(\\d+(?:-\\d+)?),?\\s*\\d{4}/);\n  if (!m) return null;\n  const monthPl = MONTH_MAP[m[1]];\n  if (!monthPl) return null;\n  return m[2] + ' ' + monthPl;\n}\n\n// Sort by key length descending so more specific names match before shorter ones\n// e.g. 'Professional Scrum Product Owner - Advanced' before 'Professional Scrum Product Owner'\nconst sortedEntries = Object.entries(COURSE_MAP).sort((a, b) => b[0].length - a[0].length);\n\nfunction findCourseMapping(title) {\n  for (const [name, info] of sortedEntries) {\n    if (title.includes(name)) return { ...info, matchedKey: name };\n  }\n  return null;\n}\n\nconst results = [];\nfor (const item of $input.all()) {\n  const d = item.json;\n  const mapping = findCourseMapping(d.courseTitle);\n  const tabName = parseDateToTabName(d.courseDate);\n\n  let spreadsheetId, sheetTab, isPrivateCourse;\n  if (mapping) {\n    spreadsheetId = mapping.id;\n    sheetTab = tabName;\n    isPrivateCourse = false;\n  } else {\n    spreadsheetId = PRIVATE_SHEET_ID;\n    sheetTab = null;\n    isPrivateCourse = true;\n  }\n\n  results.push({ json: {\n    ...d,\n    spreadsheetId,\n    sheetTab,\n    isPrivateCourse,\n    courseAbbr: mapping ? mapping.abbr : 'PRIVATE',\n    tabSearchHint: tabName\n  }});\n}\n\nreturn results;"
+        },
+        "id": "gs_resolve",
+        "name": "Resolve Sheet Targets",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3344,
+          -320
+        ]
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "gs_loop",
+        "name": "Loop Courses",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          3568,
+          -320
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// Native googleSheets Read node returns rows as objects with header keys + row_number.\nconst course = $('Loop Courses').first().json;\nconst sheetRows = $input.all().map(i => i.json);\n\nif (sheetRows.length === 0) {\n  return [{ json: { skip: true, reason: 'Empty sheet', courseTitle: course.courseTitle, spreadsheetId: course.spreadsheetId, sheetTab: course.sheetTab } }];\n}\n\nconst sampleRow = sheetRows[0];\nconst keys = Object.keys(sampleRow).filter(k => k !== 'row_number');\n\nconst firstNameKey = keys.find(k => k.toLowerCase().includes('imi') && !k.toLowerCase().includes('nazwisko') && !k.toLowerCase().includes('i nazwisko')) || keys[0];\nconst lastNameKey = keys.find(k => k.toLowerCase().includes('nazwisko') && !k.toLowerCase().includes('i nazwisko')) || keys[1];\nconst emailKey = keys.find(k => k.toLowerCase().includes('email'));\n\n// Determine assessment column index (0-based)\n// If 'Egzamin' header already exists, use its position; otherwise append after last column\nconst hasEgzamin = keys.includes('Egzamin');\nlet assessCol;\nif (hasEgzamin) {\n  assessCol = keys.indexOf('Egzamin');\n} else {\n  assessCol = keys.length; // append after last header\n}\n\nconst students = course.students || [];\nconst results = [];\nconst unmatched = [];\n\nfor (const student of students) {\n  const fn = (student.firstName || '').trim().toLowerCase();\n  const ln = (student.lastName || '').trim().toLowerCase();\n\n  let matchedRow = null;\n  for (const row of sheetRows) {\n    const cellFn = (row[firstNameKey] || '').trim().toLowerCase();\n    const cellLn = (row[lastNameKey] || '').trim().toLowerCase();\n    if (cellFn === fn && cellLn === ln) { matchedRow = row; break; }\n  }\n\n  if (!matchedRow && emailKey) {\n    const email = (student.email || '').trim().toLowerCase();\n    if (email) matchedRow = sheetRows.find(r => (r[emailKey] || '').trim().toLowerCase() === email) || null;\n  }\n\n  if (!matchedRow) { unmatched.push(student.firstName + ' ' + student.lastName); continue; }\n\n  // Skip if already filled\n  if (hasEgzamin && matchedRow['Egzamin'] && matchedRow['Egzamin'].toString().trim() !== '') continue;\n\n  const scoreStr = student.score != null ? student.score + '%' : '\\u2014';\n  const passedStr = student.completedAssessment ? (student.passed ? 'TAK' : 'NIE') : '\\u2014';\n  const attemptsStr = student.attempts > 0 ? String(student.attempts) : '\\u2014';\n\n  results.push({ json: {\n    spreadsheetId: course.spreadsheetId,\n    sheetTab: course.sheetTab,\n    row_number: matchedRow.row_number,\n    assessCol,\n    needsHeader: !hasEgzamin,\n    'Egzamin': course.assessmentName || '\\u2014',\n    'Wynik': scoreStr,\n    'Pr\\u00f3by': attemptsStr,\n    'Zda\\u0142/a': passedStr\n  }});\n}\n\nif (unmatched.length > 0) console.log('Unmatched:', unmatched.join(', '));\n\nif (results.length === 0) {\n  return [{ json: { skip: true, reason: 'No students to update', courseTitle: course.courseTitle, spreadsheetId: course.spreadsheetId, sheetTab: course.sheetTab } }];\n}\n\nreturn results;"
+        },
+        "id": "gs_match",
+        "name": "Match Students",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          4016,
+          -320
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "version": 2,
+              "leftValue": "",
+              "caseSensitive": true,
+              "typeValidation": "loose"
+            },
+            "combinator": "and",
+            "conditions": [
+              {
+                "id": "skip1",
+                "leftValue": "={{ $json.skip }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "gs_skip",
+        "name": "Skip If No Updates",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          4016,
+          -208
+        ]
+      },
+      {
+        "parameters": {
+          "documentId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ $json.spreadsheetId }}"
+          },
+          "sheetName": {
+            "__rl": true,
+            "mode": "name",
+            "value": "={{ $json.sheetTab }}"
+          },
+          "options": {}
+        },
+        "id": "gs_read2",
+        "name": "Read Sheet Tab",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          3792,
+          -320
+        ],
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "const course = $('Loop Courses').first().json;\nconst item = $input.first().json;\nconst msg = item.error?.message || item.message || item.description || JSON.stringify(item);\nconsole.warn(`[${course.courseAbbr}] Sheet tab \"${course.sheetTab}\" not found — skipping. Error: ${msg}`);\n// Return skip item so the loop continues gracefully\nreturn [{ json: { skip: true, reason: `Tab \"${course.sheetTab}\" not found in ${course.courseAbbr} spreadsheet`, courseTitle: course.courseTitle, spreadsheetId: course.spreadsheetId, sheetTab: course.sheetTab } }];"
+        },
+        "id": "gs_read_err",
+        "name": "Handle Read Error",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3792,
+          -208
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\nif (items.length === 0) return [];\n\nconst first = items[0].json;\nconst spreadsheetId = first.spreadsheetId;\nconst sheetTab = first.sheetTab;\nconst assessCol = first.assessCol;\n\nfunction colLetter(idx) {\n  let s = '', n = idx;\n  while (n >= 0) { s = String.fromCharCode(65 + (n % 26)) + s; n = Math.floor(n / 26) - 1; }\n  return s;\n}\n\nconst data = [];\n\n// Add header row if this is a new assessment column (assessCol points beyond existing headers)\n// We detect this by checking if any item has a row_number — if assessCol >= keys in sheet,\n// we need headers. Pass a flag from Match Students to know.\n// Simple heuristic: if assessCol is not -1 and first item signals needsHeader\nif (first.needsHeader) {\n  const startCol = colLetter(assessCol);\n  const endCol = colLetter(assessCol + 3);\n  data.push({\n    range: `'${sheetTab}'!${startCol}1:${endCol}1`,\n    values: [['Egzamin', 'Wynik', 'Pr\\u00f3by', 'Zda\\u0142/a']]\n  });\n}\n\nfor (const item of items) {\n  const d = item.json;\n  const rowNum = d.row_number;\n  const startCol = colLetter(assessCol);\n  const endCol = colLetter(assessCol + 3);\n  data.push({\n    range: `'${sheetTab}'!${startCol}${rowNum}:${endCol}${rowNum}`,\n    values: [[d['Egzamin'], d['Wynik'], d['Pr\\u00f3by'], d['Zda\\u0142/a']]]\n  });\n}\n\nreturn [{ json: { spreadsheetId, data } }];"
+        },
+        "id": "gs_collect",
+        "name": "Collect Updates",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          4240,
+          -320
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://sheets.googleapis.com/v4/spreadsheets/{{ $json.spreadsheetId }}/values:batchUpdate",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "googleSheetsOAuth2Api",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ JSON.stringify({ valueInputOption: 'USER_ENTERED', data: $json.data }) }}",
+          "options": {}
+        },
+        "id": "gs_write3",
+        "name": "Write Assessment Data",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          4464,
+          -320
+        ]
+      }
+    ],
+    "connections": {
+      "Webhook Trigger": {
+        "main": [
+          [
+            {
+              "node": "Respond to Slack",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When clicking Execute workflow": {
+        "main": [
+          [
+            {
+              "node": "Respond to Slack",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Login Page": {
+        "main": [
+          [
+            {
+              "node": "Extract Login Form",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read Credentials": {
+        "main": [
+          [
+            {
+              "node": "Build Login Body",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Login Body": {
+        "main": [
+          [
+            {
+              "node": "Post Login Form",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Post Login Form": {
+        "main": [
+          [
+            {
+              "node": "Extract Redirect URL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GET Complete Registration": {
+        "main": [
+          [
+            {
+              "node": "Build Consent URL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Course List": {
+        "main": [
+          [
+            {
+              "node": "Parse Course List",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Course List": {
+        "main": [
+          [
+            {
+              "node": "Has Score Reports?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Has Score Reports?": {
+        "main": [
+          [
+            {
+              "node": "Download Score Report",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "No Reports Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download Score Report": {
+        "main": [
+          [
+            {
+              "node": "Parse Excel",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Excel": {
+        "main": [
+          [
+            {
+              "node": "Extract Students",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract Students": {
+        "main": [
+          [
+            {
+              "node": "Build Slack Message",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Resolve Sheet Targets",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Slack Message": {
+        "main": [
+          [
+            {
+              "node": "Post to Slack",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "No Reports Message": {
+        "main": [
+          [
+            {
+              "node": "Post to Slack",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Consent URL": {
+        "main": [
+          [
+            {
+              "node": "GET Consent Page",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GET Consent Page": {
+        "main": [
+          [
+            {
+              "node": "Build Callback URL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build Callback URL": {
+        "main": [
+          [
+            {
+              "node": "GET OAuth Callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GET OAuth Callback": {
+        "main": [
+          [
+            {
+              "node": "Parse Meta Refresh",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract Session Cookie": {
+        "main": [
+          [
+            {
+              "node": "Fetch Course List",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Meta Refresh": {
+        "main": [
+          [
+            {
+              "node": "GET Meta Refresh URL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get FusionAuth Form": {
+        "main": [
+          [
+            {
+              "node": "Read Credentials",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Resolve Sheet Targets": {
+        "main": [
+          [
+            {
+              "node": "Loop Courses",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Match Students": {
+        "main": [
+          [
+            {
+              "node": "Skip If No Updates",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Skip If No Updates": {
+        "main": [
+          [
+            {
+              "node": "Loop Courses",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Collect Updates",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Courses": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Read Sheet Tab",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Read Sheet Tab": {
+        "main": [
+          [
+            {
+              "node": "Match Students",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Handle Read Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Handle Read Error": {
+        "main": [
+          [
+            {
+              "node": "Skip If No Updates",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Collect Updates": {
+        "main": [
+          [
+            {
+              "node": "Write Assessment Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Write Assessment Data": {
+        "main": [
+          [
+            {
+              "node": "Loop Courses",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract Redirect URL": {
+        "main": [
+          [
+            {
+              "node": "Extract Session Cookie",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Respond to Slack": {
+        "main": [
+          [
+            {
+              "node": "Read Credentials",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Krystian Kaczor",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-05-06T14:11:15.934Z",
+        "id": 441,
+        "workflowId": "CQ6zEuIEIDS67Tjf",
+        "versionId": "7d2d00ed-da83-477e-9da9-6ff3ce394a68",
+        "event": "activated",
+        "userId": "d20c49d1-e72b-4b77-8ef9-db89288460b0"
+      },
+      {
+        "createdAt": "2026-05-06T14:11:15.920Z",
+        "id": 440,
+        "workflowId": "CQ6zEuIEIDS67Tjf",
+        "versionId": "7d2d00ed-da83-477e-9da9-6ff3ce394a68",
+        "event": "deactivated",
+        "userId": "d20c49d1-e72b-4b77-8ef9-db89288460b0"
+      }
+    ]
+  }
+}
