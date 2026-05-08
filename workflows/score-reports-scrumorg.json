@@ -272,7 +272,7 @@
           "parameters": [
             {
               "name": "node_date_range_start",
-              "value": "={{ (() => { const body = $('Webhook Trigger').first()?.json?.body || {}; return body.from || $now.minus({days:30}).toFormat('yyyy-MM-dd'); })() }}"
+              "value": "={{ (() => { const body = $('Webhook Trigger').first()?.json?.body || {}; const text = (body.text || '').trim(); return text.match(/^\\d{4}-\\d{2}-\\d{2}$/) ? text : $now.minus({days:30}).toFormat('yyyy-MM-dd'); })() }}"
             },
             {
               "name": "node_date_range_end",

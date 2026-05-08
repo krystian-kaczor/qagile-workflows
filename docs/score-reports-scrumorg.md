@@ -87,17 +87,18 @@ Webhook / Manual → Respond to Slack → Read Credentials → Build Login Body
 
 `Fetch Course List` queries `https://www.scrum.org/admin/courses/manage` with `node_date_range_start` and `node_date_range_end` parameters.
 
-**Default (no params):** last 30 days → today.
+**Default (no argument):** last 30 days → today.
 
-**Override via webhook POST body:**
+**Override from Slack:** type a date after the command:
+```
+/score-reports 2026-01-01
+```
+The `text` field Slack sends is read as `from` if it matches `YYYY-MM-DD`. The `to` date is always today.
+
+**Override via direct HTTP POST** (e.g. curl/Postman):
 ```json
 { "from": "2026-01-01", "to": "2026-05-08" }
 ```
-Both params are optional — omit either to use the default. Works from Slack via:
-```
-/score-reports {"from":"2026-01-01"}
-```
-or via direct HTTP POST to the webhook URL.
 
 The manual trigger always uses the default (no body to read from).
 
