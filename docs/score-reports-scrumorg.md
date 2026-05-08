@@ -29,7 +29,7 @@ Logs into scrum.org as a trainer, downloads score report Excel files for each ac
 | login3 | Post Login Form | httpRequest | POST to FusionAuth login endpoint |
 | login4 | Extract Redirect URL | code | Extracts OAuth redirect from response |
 | login9 | Extract Session Cookie | code | Extracts `SSESS*` session cookie |
-| sr3 | Fetch Course List | httpRequest | GET trainer course list from scrum.org |
+| sr3 | Fetch Course List | httpRequest | GET trainer course list from scrum.org; date range from webhook body or default last 30 days |
 | sr4 | Parse Course List | code | Parses HTML/JSON course list |
 | ifHasCourses | Has Score Reports? | if | Branches: has reports vs no reports |
 | sr5 | Download Score Report | httpRequest | Downloads Excel score report per course |
@@ -82,6 +82,24 @@ Webhook / Manual → Respond to Slack → Read Credentials → Build Login Body
 - n8n DataTable: scrum.org login credentials (email + password)
 - Google Sheets OAuth (re-authorization needed if token expires — manual action in n8n UI)
 - Slack Bot Token
+
+## Date Range / Triggering
+
+`Fetch Course List` queries `https://www.scrum.org/admin/courses/manage` with `node_date_range_start` and `node_date_range_end` parameters.
+
+**Default (no params):** last 30 days → today.
+
+**Override via webhook POST body:**
+```json
+{ "from": "2026-01-01", "to": "2026-05-08" }
+```
+Both params are optional — omit either to use the default. Works from Slack via:
+```
+/score-reports {"from":"2026-01-01"}
+```
+or via direct HTTP POST to the webhook URL.
+
+The manual trigger always uses the default (no body to read from).
 
 ## Known Issues / Notes
 

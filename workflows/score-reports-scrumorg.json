@@ -272,11 +272,11 @@
           "parameters": [
             {
               "name": "node_date_range_start",
-              "value": "={{ $now.minus({days:30}).toFormat('yyyy-MM-dd') }}"
+              "value": "={{ (() => { const body = $('Webhook Trigger').first()?.json?.body || {}; return body.from || $now.minus({days:30}).toFormat('yyyy-MM-dd'); })() }}"
             },
             {
               "name": "node_date_range_end",
-              "value": "={{ $now.toFormat('yyyy-MM-dd') }}"
+              "value": "={{ (() => { const body = $('Webhook Trigger').first()?.json?.body || {}; return body.to || $now.toFormat('yyyy-MM-dd'); })() }}"
             }
           ]
         },
