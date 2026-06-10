@@ -6,13 +6,14 @@
 
 ## Purpose
 
-Reads unread emails from designated Outlook "Faktury" (invoices) folders, extracts PDF invoices (from attachments or links in email body), uses Google Gemini AI to parse invoice data, validates the data, then files the PDF into the correct OneDrive folder (JDG or Spółka) and appends a row to the corresponding Excel tracking sheet.
+Reads unread emails from **two sources** — designated Outlook "Faktury" (invoices) folders **and** a Gmail account (vendors that bill to Gmail: ElevenLabs, HeyGen, fal.ai, etc.) — extracts PDF invoices (from attachments or links in email body), uses Google Gemini AI to parse invoice data, validates the data, then files the PDF into the correct OneDrive folder (JDG or Spółka) and appends a row to the corresponding Excel tracking sheet. Processed Outlook emails are marked read; processed Gmail messages are marked read via the Gmail node.
 
 ## Key External Resources
 
 | Resource | Detail |
 |---|---|
 | Outlook folders | "Faktury" folders — unread emails fetched from these |
+| Gmail account | Unread invoice emails fetched via Gmail node. Invoices arrive **from Stripe** (`invoice+statements+...@stripe.com`, subject "Your receipt from <vendor>") for ElevenLabs / HeyGen / fal.ai, as **PDF attachments** (`Invoice-*.pdf` + `Receipt-*.pdf`). |
 | OneDrive (JDG) | JDG invoice folder — year/month subfolder structure |
 | OneDrive (Spółka/INC) | Company invoice folder — year/month subfolder structure |
 | Excel tracking (JDG) | Spreadsheet for JDG invoices |
@@ -65,33 +66,74 @@ Reads unread emails from designated Outlook "Faktury" (invoices) folders, extrac
 | 592be37c | Update a message | microsoftOutlook | Marks email as read / moves (JDG path) |
 | 5dae6470 | Upload a file1 | microsoftOneDrive | Uploads PDF to JDG month folder (`parentId = $json.folderId`) |
 | f88e959c | Append data to sheet | microsoftExcel | Appends invoice row to JDG Excel sheet |
-| 4880975a | Update a message1 | microsoftOutlook | Marks email as read / moves (INC path) |
+| 4880975a | Update a message1 | microsoftOutlook | Marks email as read / moves (INC path) — **Outlook items only** (FALSE branch of Mark Read Source? (INC)) |
 | d038c342 | Upload a file | microsoftOneDrive | Uploads PDF to INC month folder (`parentId = $json.folderId`) |
 | 2f9f5852 | Append data to sheet1 | microsoftExcel | Appends invoice row to INC Excel sheet |
+
+### Gmail source nodes (added 2026-05-22)
+
+| ID | Name | Type | Notes |
+|---|---|---|---|
+| f95b1446 | Fetch Unread Gmail Invoices | gmail | `getAll`, `simple:false`, `downloadAttachments:true`, `readStatus:unread`. `q` = `from:stripe.com subject:receipt (ElevenLabs OR "Eleven Labs" OR HeyGen OR "fal.ai" OR fal)` — vendor invoices bill **through Stripe**, NOT from the vendor domains. Branches off ▶️ Start in parallel with Outlook fetch. Credential `gmailOAuth2` = `oGattM1WQITzTJAj` ("Gmail account"). |
+| 6e4a9ceb | Gmail Has Attachment? | if | Checks for `attachment_N` binary keys (Gmail has no `hasAttachments` field) |
+| 2f41326d | Gmail Pick PDF Attachment | code | Picks PDF attachment, dedupes invoice-vs-receipt, emits `binary.data` + `messageID` + `source:'gmail'` |
+| e297ad85 | Gmail Get Links | code | Extracts URLs from Gmail `html`/`text` body |
+| 19045e9c | Gmail Split URLs | splitOut | One item per URL |
+| 5bdbcc2d | Gmail Fetch URL | httpRequest | Downloads PDF from URL (fullResponse, neverError) |
+| 55731631 | Gmail Filter PDFs | if | Content-type contains `pdf` |
+| 7b56bfa9 | Gmail Prepare Body PDF | code | Normalizes fetched binary → `binary.data` + `messageID` + `source:'gmail'` |
+| 8fa635b9 | Gmail Log Dropped | set | Terminal — non-PDF body links (mirrors Log Dropped Link) |
+| b48756bd | Prepare Mailchimp | code | Inserted between Convert HTML to PDF and StoreFile; sets `messageID` (from Get message body) + `source:'outlook'` |
+| 2b4eff98 | Mark Read Source? (JDG) | if | `$('SelectJDGFolder').item.json.source == 'gmail'` → Gmail Mark Read JDG; else → Update a message. **Reads `source` cross-node from `SelectJDGFolder`, NOT `$json`** — input is the OneDrive Upload response, which drops the custom `source` field. |
+| d7f6e2e7 | Gmail Mark Read JDG | gmail | `markAsRead`, `messageId = $('SelectJDGFolder').item.json.messageID` |
+| 6c4333fc | Mark Read Source? (INC) | if | `$('SelectINCFolder').item.json.source == 'gmail'` → Gmail Mark Read INC; else → Update a message1. **Reads `source` cross-node from `SelectINCFolder`, NOT `$json`** (same OneDrive-response reason). |
+| 792c3b0a | Gmail Mark Read INC | gmail | `markAsRead`, `messageId = $('SelectINCFolder').item.json.messageID` |
+
+### Source flag (`source`)
+
+A `source` field (`'outlook'` / `'gmail'`) is set on every item at its prep node and survives end-to-end so the terminal mark-as-read step routes correctly:
+- Set in: `Prepare Output1`, `Prepare Output2`, `Prepare Mailchimp` (outlook); `Gmail Pick PDF Attachment`, `Gmail Prepare Body PDF` (gmail).
+- `StoreFile` reads `messageID`/`source` from `$json` (was hardcoded to `$('Has attachment').item.json.id`).
+- `Validate Data` copies `source` (and `messageId` from `storeItem.json.messageID`) into its output.
+- `SelectJDGFolder`/`SelectINCFolder` carry `source` into `baseJson`.
+- `Mark Read Source? (JDG/INC)` branch on it — reading `$('SelectJDGFolder'/'SelectINCFolder').item.json.source`, **not** `$json.source`. Their direct input is the OneDrive `Upload a file` response, which does not preserve the custom `source` field, so a `$json.source` test always evaluates `undefined` (FALSE).
+
+Both `StoreFile` (5 inbound) and the two `Append data to sheet` nodes (2 inbound each) merge multiple connections — n8n appends inbound streams; each invoice item is single-source, so no double rows.
 
 ## Flow
 
 ```
-▶️ Start → Fetch Unread Emails → Any Emails?
-  └─ YES → Has attachment?
-       ├─ YES → Get Attachments → PDF? → Download attachment → Prepare Output1 → StoreFile
-       └─ NO  → Get message body → From Mailchimp?
-                  ├─ YES → Convert HTML to PDF → StoreFile
-                  └─ NO  → Get links → Split URLs → Fetch URL → Filter PDFs
-                              → Prepare Output → If → Prepare Output2 → StoreFile
-
+▶️ Start ─┬─ Fetch Unread Emails (Outlook) → Any Emails?
+          │     └─ YES → Has attachment?
+          │          ├─ YES → Get Attachments → Tag Parent → PDF? → Dedupe → Download attachment → Prepare Output1 ─┐
+          │          └─ NO  → Get message body → From Mailchimp?                                                    │
+          │                     ├─ YES → Convert HTML to PDF → Prepare Mailchimp ───────────────────────────────────┤
+          │                     └─ NO  → Get links → Split URLs → Fetch URL → Filter PDFs                            │
+          │                                 → Prepare Output → If → Prepare Output2 ─────────────────────────────────┤
+          │                                                                                                          │
+          └─ Fetch Unread Gmail Invoices → Gmail Has Attachment?                                                     │
+                ├─ TRUE → Gmail Pick PDF Attachment ───────────────────────────────────────────────────────────────┤
+                └─ FALSE → Gmail Get Links → Gmail Split URLs → Gmail Fetch URL → Gmail Filter PDFs                   │
+                              ├─ TRUE → Gmail Prepare Body PDF ───────────────────────────────────────────────────────┤
+                              └─ FALSE → Gmail Log Dropped (terminal)                                                  │
+                                                                                                                      ▼
+                                                                                                                  StoreFile
 StoreFile → Analyze document (Gemini AI) → Validate Data → Invoice Data Valid?
   └─ VALID → JDG or INC?
        ├─ JDG → JDG Destination → Get items in folder → Check Year Folder
        │          → Get Months Folders JDG → SelectJDGFolder → Folder Needs Creation? (JDG)
        │               ├─ TRUE  → Create Month Folder JDG → Fill Folder ID (JDG) ─┐
        │               └─ FALSE ──────────────────────────────────────────────────┤
-       │          → Update message → Upload PDF ($json.folderId) → Append to JDG sheet
+       │          → Upload PDF ($json.folderId) → Mark Read Source? (JDG)
+       │               ├─ gmail   → Gmail Mark Read JDG ─┐
+       │               └─ outlook → Update a message ────┤→ Append to JDG sheet
        └─ INC → Spółka Destination → Get items in folder1 → Check Year Folder1
                   → Get Months Folders INC → SelectINCFolder → Folder Needs Creation? (INC)
                        ├─ TRUE  → Create Month Folder INC → Fill Folder ID (INC) ─┐
                        └─ FALSE ──────────────────────────────────────────────────┤
-                  → Update message1 → Upload PDF ($json.folderId) → Append to INC sheet
+                  → Upload PDF ($json.folderId) → Mark Read Source? (INC)
+                       ├─ gmail   → Gmail Mark Read INC ─┐
+                       └─ outlook → Update a message1 ───┤→ Append to INC sheet
 ```
 
 ## Credentials
@@ -100,6 +142,7 @@ StoreFile → Analyze document (Gemini AI) → Validate Data → Invoice Data Va
 - Microsoft OneDrive OAuth (list + upload files)
 - Microsoft Excel OAuth (append rows)
 - Google Gemini API key
+- **Gmail OAuth2 (`gmailOAuth2`)** — credential `oGattM1WQITzTJAj` ("Gmail account"), attached to the 3 Gmail nodes (Fetch Unread Gmail Invoices, Gmail Mark Read JDG, Gmail Mark Read INC). Created & connected in the n8n UI on 2026-05-28.
 - **Secret rotation:** Last rotated 2026-05-13. Next expiry: ~2028-05-13. Set a calendar reminder 2 months before.
 
 ## Known Issues / Notes
@@ -108,6 +151,45 @@ StoreFile → Analyze document (Gemini AI) → Validate Data → Invoice Data Va
 - Gemini AI extraction can fail on non-standard invoice layouts; `Validate Data` catches missing fields.
 - The `htmlcsstopdf` node requires the `n8n-nodes-htmlcsstopdf` community package installed on the n8n instance.
 - OneDrive folder structure assumed: `root/YYYY/MM - MonthName/`. `SelectJDGFolder` / `SelectINCFolder` handle matching.
+- **Gmail invoices come from Stripe, not vendor domains.** ElevenLabs/HeyGen/fal.ai bill through Stripe; the email is `invoice+statements+acct_*@stripe.com`, subject "Your receipt from <vendor>", with two PDF attachments (`Invoice-*.pdf` + `Receipt-*.pdf`). The Gmail branch takes the **attachment path**; `Gmail Pick PDF Attachment` keeps the `Invoice-*` PDF when both are present.
+- **Gmail attachment binary keys** are named `attachment_0…N` (n8n default `dataPropertyAttachmentsPrefixName`). `Gmail Has Attachment?` and `Gmail Pick PDF Attachment` rely on the `attachment_` prefix.
+- **`Gmail Get Links` / body-link path** is a fallback only; its regex now keeps only PDF-looking URLs (`.pdf`, `/pdf`, `files.stripe.com`, `receipts/invoices`) to avoid the earlier bug where 544 tracking/stylesheet URLs were fetched and timed out. `Gmail Fetch URL` has `retryOnFail` + `onError: continueRegularOutput` so a single dead URL can't fail the whole run.
+
+## Changes (2026-06-10)
+
+### Fixed "Id is malformed" in Outlook `Update a message` (Gmail items mis-routed)
+
+Every invoice — Gmail-sourced included — was being routed into the Outlook `Update a message` / `Update a message1` nodes, which then threw **"Id is malformed"** on a Gmail message id.
+
+- **Root cause:** `Mark Read Source? (JDG)` (2b4eff98) and `Mark Read Source? (INC)` (6c4333fc) tested `={{ $json.source }}`. Their input is the OneDrive `Upload a file` response, which carries only OneDrive file metadata — **not** the custom `source` field. So `$json.source` was always `undefined`, `source == 'gmail'` was always FALSE, and all items fell through to the Outlook branch.
+- **Fix:** changed each IF condition `leftValue` to read `source` cross-node from the `Select*Folder` node — the same node the mark-read nodes already trust for `messageID`. Used `.first()` (not `.item`) because the OneDrive Upload boundary makes `.item` pairing unreliable here, and each JDG/INC branch carries exactly one invoice per run:
+  - JDG: `={{ $('SelectJDGFolder').first().json.source }}`
+  - INC: `={{ $('SelectINCFolder').first().json.source }}`
+- One condition per IF node; wiring/operator/branches unchanged. Gmail items now route TRUE → `Gmail Mark Read JDG/INC`; Outlook items route FALSE → `Update a message`/`Update a message1`.
+- **MCP gotcha:** applying this via `n8n_update_partial_workflow` with a dotted path `parameters.conditions.conditions[0].leftValue` does **not** index into the array — it silently creates a junk sibling key `"conditions[0]"` and leaves the real condition unchanged. The first two attempts had no effect for this reason. Fix: replace the whole `parameters.conditions` object in one `updateNode`.
+- **Verified:** run 2327 (2026-06-10) processed a mixed Outlook+Gmail batch — Gmail HeyGen invoice → `Gmail Mark Read JDG` (UNREAD label cleared); Outlook g43office invoice → `Update a message` (`isRead: true`, no malformed-id error). `status: success`.
+- **Batch caveat:** `.first()` is correct only while each JDG/INC branch carries a single invoice per run. A fully batch-safe fix would carry `source`/`messageID` as real `$json` fields through the OneDrive Upload nodes.
+
+## Changes (2026-05-22)
+
+### Added Gmail as a second invoice source
+
+- Goal: process invoice emails arriving on Krystian's Gmail account (ElevenLabs, HeyGen, fal.ai, others) alongside the existing Outlook source.
+- **Strategy:** parallel Gmail sub-pipeline (dedicated nodes) merging into the existing `StoreFile` node. Everything downstream of `StoreFile` is source-agnostic except the two terminal mark-as-read nodes, which now branch on a `source` flag.
+- **Added:** 9 Gmail branch nodes (fetch → attachment/body-link → StoreFile), `Prepare Mailchimp` (so the Mailchimp path also carries `messageID`/`source`), and 2 `Mark Read Source?` IF nodes + 2 `Gmail Mark Read` nodes. See the Gmail node-map table and the `source` flag section above.
+- **Modified:** `StoreFile` (reads `messageID`/`source` from `$json`, adds `source`), `Prepare Output1`/`Prepare Output2` (emit `messageID` + `source:'outlook'`), `Validate Data` (carries `source`), `SelectJDGFolder`/`SelectINCFolder` (carry `source`).
+- **Open:** the `gmailOAuth2` credential is not yet created on the instance — attach it manually before the Gmail nodes can run (see Credentials).
+
+## Changes (2026-05-28)
+
+### Fixed Gmail attachment processing (first live run)
+
+First run pulled 16 ElevenLabs **marketing newsletters** (CATEGORY_PROMOTIONS), none with attachments, and the body-link path exploded to 544 URLs → `Gmail Fetch URL` timed out (`ETIMEDOUT` on a SendGrid tracking pixel). Root causes + fixes:
+
+- **Wrong `q` query.** Original `from:elevenlabs.io OR from:heygen.com OR from:fal.ai` never matches the invoices, because the vendors bill **through Stripe** — the email is from `invoice+statements+acct_*@stripe.com` with subject "Your receipt from <vendor>", carrying `Invoice-*.pdf` + `Receipt-*.pdf` attachments. New `q`: `from:stripe.com subject:receipt (ElevenLabs OR "Eleven Labs" OR HeyGen OR "fal.ai" OR fal)`. These now flow the **attachment path** (`Gmail Has Attachment?` TRUE → `Gmail Pick PDF Attachment`), which already picks the `Invoice-*` PDF.
+- **Runaway link extraction.** `Gmail Get Links` matched every URL in the HTML body (544). Now filters to PDF-looking URLs only (`.pdf`, `/pdf`, `files.stripe.com`, `receipts/invoices`) + dedupes. This path is now only a fallback.
+- **No HTTP error handling.** `Gmail Fetch URL` got `retryOnFail` (2 tries) + `onError: continueRegularOutput` so a single unreachable URL no longer kills the whole execution.
+- **Credential created.** `gmailOAuth2` `oGattM1WQITzTJAj` ("Gmail account") connected in the UI and attached to all 3 Gmail nodes.
 
 ## Changes (2026-05-13)
 

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-13T13:23:25.169Z",
+  "updatedAt": "2026-05-28T20:42:42.109Z",
   "createdAt": "2026-03-24T21:58:50.973Z",
   "id": "onRzmQggVN6TBhFg",
   "name": "Outlook Invoices Processing v2",
@@ -358,7 +358,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const messageId = $json.id;\n\n\nreturn {\n  json: { \n    messageId: messageId \n  },\n  binary: $input.item.binary\n};\n\n\n"
+        "jsCode": "const messageID = $('Has attachment').item.json.id;\n\nreturn {\n  json: {\n    messageID: messageID,\n    source: 'outlook'\n  },\n  binary: $input.item.binary\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -372,7 +372,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "\nconst messageId = $json.messageId;\n\nreturn {\n  json: { \n    messageId: messageId,\n    fileName: $json.fileName,\n    mimeType: $json.mimeType\n  },\n  binary: $input.item.binary\n};"
+        "jsCode": "return {\n  json: {\n    messageID: $json.messageId,\n    source: 'outlook',\n    fileName: $json.fileName,\n    mimeType: $json.mimeType\n  },\n  binary: $input.item.binary\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -434,7 +434,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const items = $input.all();\n  const storeFiles = $('StoreFile').all();\n  const results = [];\n\n  for (let i = 0; i < items.length; i++) {\n    const item = items[i];\n    const storeItem = storeFiles[i];\n\n    if (item.json.error) {\n      results.push({\n        json: {\n          isValid: false,\n          validationError: 'Gemini extraction failed',\n          messageId: storeItem ? storeItem.json.messageID : null\n        },\n        pairedItem: i\n      });\n      continue;\n    }\n\n    let response = item.json.content?.parts?.[0]?.text || item.json.text || '';\n    response = response.replace(/```json\\s*/g, '').replace(/```\\s*/g, '').trim();\n\n    try {\n      const data = JSON.parse(response);\n\n      const isValid =\n        (data.customer_tax_id === null || data.customer_tax_id?.length >= 10) &&\n        data.customer_company?.length > 0 &&\n        data.invoice_issued_date?.match(/\\d{4}-\\d{2}-\\d{2}/) &&\n        data.invoice_number?.length > 0 &&\n        data.invoice_amount_gross !== undefined &&\n        data.currency?.length >= 3 &&\n        data.category?.length > 0;\n\n      results.push({\n        json: {\n          ...data,\n          isValid: isValid,\n          validationError: isValid ? null : 'Missing or invalid required fields',\n          messageId: storeItem ? storeItem.json.messageID : null\n        },\n        binary: storeItem ? storeItem.binary : {},\n        pairedItem: i\n      });\n\n    } catch (e) {\n      results.push({\n        json: {\n          isValid: false,\n          validationError: 'JSON parse failed: ' + e.message,\n          rawResponse: response.substring(0, 200),\n          messageId: storeItem ? storeItem.json.messageID : null\n        },\n        pairedItem: i\n      });\n    }\n  }\n\n  return results;"
+        "jsCode": "const items = $input.all();\n  const storeFiles = $('StoreFile').all();\n  const results = [];\n\n  for (let i = 0; i < items.length; i++) {\n    const item = items[i];\n    const storeItem = storeFiles[i];\n\n    if (item.json.error) {\n      results.push({\n        json: {\n          isValid: false,\n          validationError: 'Gemini extraction failed',\n          messageId: storeItem ? storeItem.json.messageID : null,\n          source: storeItem ? storeItem.json.source : null\n        },\n        pairedItem: i\n      });\n      continue;\n    }\n\n    let response = item.json.content?.parts?.[0]?.text || item.json.text || '';\n    response = response.replace(/```json\\s*/g, '').replace(/```\\s*/g, '').trim();\n\n    try {\n      const data = JSON.parse(response);\n\n      const isValid =\n        (data.customer_tax_id === null || data.customer_tax_id?.length >= 10) &&\n        data.customer_company?.length > 0 &&\n        data.invoice_issued_date?.match(/\\d{4}-\\d{2}-\\d{2}/) &&\n        data.invoice_number?.length > 0 &&\n        data.invoice_amount_gross !== undefined &&\n        data.currency?.length >= 3 &&\n        data.category?.length > 0;\n\n      results.push({\n        json: {\n          ...data,\n          isValid: isValid,\n          validationError: isValid ? null : 'Missing or invalid required fields',\n          messageId: storeItem ? storeItem.json.messageID : null,\n          source: storeItem ? storeItem.json.source : null\n        },\n        binary: storeItem ? storeItem.binary : {},\n        pairedItem: i\n      });\n\n    } catch (e) {\n      results.push({\n        json: {\n          isValid: false,\n          validationError: 'JSON parse failed: ' + e.message,\n          rawResponse: response.substring(0, 200),\n          messageId: storeItem ? storeItem.json.messageID : null,\n          source: storeItem ? storeItem.json.source : null\n        },\n        pairedItem: i\n      });\n    }\n  }\n\n  return results;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -760,7 +760,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const folders = $input.all();\nconst invoiceData = $('Validate Data').first().json;\nconst invoiceBinary = $('Validate Data').first().binary || {};\n\nconst invoiceMonth = invoiceData['invoice_issued_month-pl'];\nconst matchingFolder = folders.find(folder => folder.json.name === invoiceMonth);\n\nconst parentFolderId = folders.length > 0 ? folders[0].json.parentReference?.id : null;\n\nconst dateCompact = (invoiceData.invoice_issued_date || '').replace(/-/g, '');\nconst category = (invoiceData.category || 'unknown').toLowerCase();\nconst invNum = (invoiceData.invoice_number || '').replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').substring(0, 30);\nconst fileName = `${dateCompact}-${category}-${invNum}.pdf`;\n\nconst binaryKeys = Object.keys(invoiceBinary);\nconst binaryKey = binaryKeys.find(k => k === 'currentFile') || binaryKeys[0];\nconst binaryData = binaryKey ? invoiceBinary[binaryKey] : null;\nconst renamedBinary = binaryData ? { currentFile: { ...binaryData, fileName } } : {};\n\nconst baseJson = {\n  folderName: invoiceMonth,\n  fileName,\n  parentFolderId,\n  needsCreation: !matchingFolder,\n  messageID: invoiceData.messageId,\n  supplier_company: invoiceData.supplier_company,\n  customer_tax_id: invoiceData.customer_tax_id,\n  customer_company: invoiceData.customer_company,\n  invoice_number: invoiceData.invoice_number,\n  invoice_issued_date: invoiceData.invoice_issued_date,\n  invoice_amount_net: invoiceData.invoice_amount_net,\n  invoice_amount_tax: invoiceData.invoice_amount_tax,\n  invoice_amount_gross: invoiceData.invoice_amount_gross,\n  currency: invoiceData.currency,\n  category: invoiceData.category,\n};\n\nif (matchingFolder) {\n  baseJson.folderId = matchingFolder.json.id;\n  baseJson.folderPath = matchingFolder.json.webUrl;\n}\n\nreturn [{ json: baseJson, binary: renamedBinary }];"
+        "jsCode": "const folders = $input.all();\nconst invoiceData = $('Validate Data').first().json;\nconst invoiceBinary = $('Validate Data').first().binary || {};\n\nconst invoiceMonth = invoiceData['invoice_issued_month-pl'];\nconst matchingFolder = folders.find(folder => folder.json.name === invoiceMonth);\n\nconst parentFolderId = folders.length > 0 ? folders[0].json.parentReference?.id : null;\n\nconst dateCompact = (invoiceData.invoice_issued_date || '').replace(/-/g, '');\nconst category = (invoiceData.category || 'unknown').toLowerCase();\nconst invNum = (invoiceData.invoice_number || '').replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').substring(0, 30);\nconst fileName = `${dateCompact}-${category}-${invNum}.pdf`;\n\nconst binaryKeys = Object.keys(invoiceBinary);\nconst binaryKey = binaryKeys.find(k => k === 'currentFile') || binaryKeys[0];\nconst binaryData = binaryKey ? invoiceBinary[binaryKey] : null;\nconst renamedBinary = binaryData ? { currentFile: { ...binaryData, fileName } } : {};\n\nconst baseJson = {\n  folderName: invoiceMonth,\n  fileName,\n  parentFolderId,\n  needsCreation: !matchingFolder,\n  messageID: invoiceData.messageId,\n  source: invoiceData.source,\n  supplier_company: invoiceData.supplier_company,\n  customer_tax_id: invoiceData.customer_tax_id,\n  customer_company: invoiceData.customer_company,\n  invoice_number: invoiceData.invoice_number,\n  invoice_issued_date: invoiceData.invoice_issued_date,\n  invoice_amount_net: invoiceData.invoice_amount_net,\n  invoice_amount_tax: invoiceData.invoice_amount_tax,\n  invoice_amount_gross: invoiceData.invoice_amount_gross,\n  currency: invoiceData.currency,\n  category: invoiceData.category,\n};\n\nif (matchingFolder) {\n  baseJson.folderId = matchingFolder.json.id;\n  baseJson.folderPath = matchingFolder.json.webUrl;\n}\n\nreturn [{ json: baseJson, binary: renamedBinary }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -773,7 +773,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const folders = $input.all();\nconst invoiceData = $('Validate Data').first().json;\nconst invoiceBinary = $('Validate Data').first().binary || {};\n\nconst invoiceMonth = invoiceData['invoice_issued_month-pl'];\nconst matchingFolder = folders.find(folder => folder.json.name === invoiceMonth);\n\nconst parentFolderId = folders.length > 0 ? folders[0].json.parentReference?.id : null;\n\nconst dateCompact = (invoiceData.invoice_issued_date || '').replace(/-/g, '');\nconst category = (invoiceData.category || 'unknown').toLowerCase();\nconst invNum = (invoiceData.invoice_number || '').replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').substring(0, 30);\nconst fileName = `${dateCompact}-${category}-${invNum}.pdf`;\n\nconst binaryKeys = Object.keys(invoiceBinary);\nconst binaryKey = binaryKeys.find(k => k === 'currentFile') || binaryKeys[0];\nconst binaryData = binaryKey ? invoiceBinary[binaryKey] : null;\nconst renamedBinary = binaryData ? { currentFile: { ...binaryData, fileName } } : {};\n\nconst baseJson = {\n  folderName: invoiceMonth,\n  fileName,\n  parentFolderId,\n  needsCreation: !matchingFolder,\n  messageID: invoiceData.messageId,\n  supplier_company: invoiceData.supplier_company,\n  customer_tax_id: invoiceData.customer_tax_id,\n  customer_company: invoiceData.customer_company,\n  invoice_number: invoiceData.invoice_number,\n  invoice_issued_date: invoiceData.invoice_issued_date,\n  invoice_amount_net: invoiceData.invoice_amount_net,\n  invoice_amount_tax: invoiceData.invoice_amount_tax,\n  invoice_amount_gross: invoiceData.invoice_amount_gross,\n  currency: invoiceData.currency,\n  category: invoiceData.category,\n};\n\nif (matchingFolder) {\n  baseJson.folderId = matchingFolder.json.id;\n  baseJson.folderPath = matchingFolder.json.webUrl;\n}\n\nreturn [{ json: baseJson, binary: renamedBinary }];"
+        "jsCode": "const folders = $input.all();\nconst invoiceData = $('Validate Data').first().json;\nconst invoiceBinary = $('Validate Data').first().binary || {};\n\nconst invoiceMonth = invoiceData['invoice_issued_month-pl'];\nconst matchingFolder = folders.find(folder => folder.json.name === invoiceMonth);\n\nconst parentFolderId = folders.length > 0 ? folders[0].json.parentReference?.id : null;\n\nconst dateCompact = (invoiceData.invoice_issued_date || '').replace(/-/g, '');\nconst category = (invoiceData.category || 'unknown').toLowerCase();\nconst invNum = (invoiceData.invoice_number || '').replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').substring(0, 30);\nconst fileName = `${dateCompact}-${category}-${invNum}.pdf`;\n\nconst binaryKeys = Object.keys(invoiceBinary);\nconst binaryKey = binaryKeys.find(k => k === 'currentFile') || binaryKeys[0];\nconst binaryData = binaryKey ? invoiceBinary[binaryKey] : null;\nconst renamedBinary = binaryData ? { currentFile: { ...binaryData, fileName } } : {};\n\nconst baseJson = {\n  folderName: invoiceMonth,\n  fileName,\n  parentFolderId,\n  needsCreation: !matchingFolder,\n  messageID: invoiceData.messageId,\n  source: invoiceData.source,\n  supplier_company: invoiceData.supplier_company,\n  customer_tax_id: invoiceData.customer_tax_id,\n  customer_company: invoiceData.customer_company,\n  invoice_number: invoiceData.invoice_number,\n  invoice_issued_date: invoiceData.invoice_issued_date,\n  invoice_amount_net: invoiceData.invoice_amount_net,\n  invoice_amount_tax: invoiceData.invoice_amount_tax,\n  invoice_amount_gross: invoiceData.invoice_amount_gross,\n  currency: invoiceData.currency,\n  category: invoiceData.category,\n};\n\nif (matchingFolder) {\n  baseJson.folderId = matchingFolder.json.id;\n  baseJson.folderPath = matchingFolder.json.webUrl;\n}\n\nreturn [{ json: baseJson, binary: renamedBinary }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -819,7 +819,13 @@
             {
               "id": "db50e235-8034-492f-9bc3-7e00f09a83dc",
               "name": "messageID",
-              "value": "={{ $('Has attachment').item.json.id }}",
+              "value": "={{ $json.messageID }}",
+              "type": "string"
+            },
+            {
+              "id": "a7c1f0e2-1111-2222-3333-444455556666",
+              "name": "source",
+              "value": "={{ $json.source }}",
               "type": "string"
             }
           ]
@@ -1398,6 +1404,321 @@
         3488,
         1696
       ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "getAll",
+        "returnAll": true,
+        "simple": false,
+        "filters": {
+          "readStatus": "unread",
+          "q": "from:stripe.com subject:receipt (ElevenLabs OR \"Eleven Labs\" OR HeyGen OR \"fal.ai\" OR fal)"
+        },
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "id": "f95b1446-2b16-4c58-9183-aa53d56145b1",
+      "name": "Fetch Unread Gmail Invoices",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -1888,
+        2304
+      ],
+      "webhookId": "22e223f0-1fd2-4ebc-90f4-091f9e327ca9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "oGattM1WQITzTJAj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "gmail-has-attachment-0001",
+              "leftValue": "={{ Object.keys($binary).filter(k => k.startsWith('attachment_')).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6e4a9ceb-3a31-4255-b5fd-9725939a6bed",
+      "name": "Gmail Has Attachment?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1440,
+        2304
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const bin = $input.item.binary || {};\nconst msgId = $json.id;\n\nconst pdfKeys = Object.keys(bin).filter(k =>\n  k.startsWith('attachment_') &&\n  (bin[k].mimeType === 'application/pdf' || /\\.pdf$/i.test(bin[k].fileName || ''))\n);\n\nif (pdfKeys.length === 0) {\n  return { json: { messageID: msgId, source: 'gmail', skip: true }, binary: {} };\n}\n\nconst isInvoice = k => /invoice|faktura/i.test(bin[k].fileName || '');\nconst isReceipt = k => /receipt|paragon/i.test(bin[k].fileName || '');\nlet chosen = pdfKeys[0];\nif (pdfKeys.length > 1 && pdfKeys.some(isInvoice) && pdfKeys.some(isReceipt)) {\n  chosen = pdfKeys.find(isInvoice);\n}\n\nreturn {\n  json: { messageID: msgId, source: 'gmail' },\n  binary: { data: bin[chosen] }\n};"
+      },
+      "id": "2f41326d-271a-4d36-9eea-22fdb430ff30",
+      "name": "Gmail Pick PDF Attachment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1104,
+        2208
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const html = $json.html || '';\nconst text = $json.text || '';\nconst body = html + ' ' + text;\nconst all = body.match(/https?:\\/\\/[^\\s<>\"')]+/gi) || [];\n// Only keep links that look like a downloadable PDF / invoice document,\n// not every tracking pixel or stylesheet URL in the email.\nconst pdfLinks = all.filter(u =>\n  /\\.pdf(\\?|$)/i.test(u) ||\n  /\\/pdf(\\?|$)/i.test(u) ||\n  /files\\.stripe\\.com/i.test(u) ||\n  /receipts?\\/invoices?/i.test(u)\n);\nconst links = [...new Set(pdfLinks)];\nreturn { json: { messageID: $json.id, source: 'gmail', links } };"
+      },
+      "id": "e297ad85-ee55-4327-974b-df15045ff8e4",
+      "name": "Gmail Get Links",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1104,
+        2480
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "links",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "id": "19045e9c-b6e1-468c-9509-0e9a956024a5",
+      "name": "Gmail Split URLs",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        2480
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.links }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "5bdbcc2d-bfca-483d-ae56-6ab44488bc04",
+      "name": "Gmail Fetch URL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -656,
+        2480
+      ],
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "gmail-filter-pdf-0001",
+              "leftValue": "={{ $json.headers[\"content-type\"] }}",
+              "rightValue": "pdf",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "55731631-eb06-4178-a050-a5581d93ca8f",
+      "name": "Gmail Filter PDFs",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -448,
+        2480
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const bin = $input.item.binary || {};\nconst key = bin.currentFile ? 'currentFile' : (bin.data ? 'data' : Object.keys(bin)[0]);\nreturn {\n  json: { messageID: $json.messageID, source: 'gmail' },\n  binary: key ? { data: bin[key] } : {}\n};"
+      },
+      "id": "7b56bfa9-5227-451c-b5ad-3c1bab29e9bf",
+      "name": "Gmail Prepare Body PDF",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        2448
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "8fa635b9-e074-4f7c-8e0d-a7b2a5f2ec4d",
+      "name": "Gmail Log Dropped",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -208,
+        2624
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  json: { messageID: $('Get message body').item.json.id, source: 'outlook' },\n  binary: $input.item.binary\n};"
+      },
+      "id": "b48756bd-14cc-483a-a89f-77ac456e2c8e",
+      "name": "Prepare Mailchimp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        1760
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $('SelectJDGFolder').item.json.messageID }}"
+      },
+      "id": "d7f6e2e7-6358-4378-85f7-3a55cd46a362",
+      "name": "Gmail Mark Read JDG",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        4000,
+        1360
+      ],
+      "webhookId": "3489478a-c805-4fae-9ddb-ea9f19b7e585",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "oGattM1WQITzTJAj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "mark-read-jdg-0001",
+              "leftValue": "={{ $('SelectJDGFolder').first().json.source }}",
+              "rightValue": "gmail",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2b4eff98-0422-4ef5-a7c7-994f65988909",
+      "name": "Mark Read Source? (JDG)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3840,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $('SelectINCFolder').item.json.messageID }}"
+      },
+      "id": "792c3b0a-0968-44e9-b000-6479e214dfb2",
+      "name": "Gmail Mark Read INC",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        4000,
+        1904
+      ],
+      "webhookId": "fc934086-9da1-4ace-b255-8f3129511358",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "oGattM1WQITzTJAj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "mark-read-inc-0001",
+              "leftValue": "={{ $('SelectINCFolder').first().json.source }}",
+              "rightValue": "gmail",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6c4333fc-cd38-465b-affd-704553e1e82f",
+      "name": "Mark Read Source? (INC)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3840,
+        1856
+      ]
     }
   ],
   "connections": {
@@ -1406,6 +1727,11 @@
         [
           {
             "node": "Fetch Unread Emails From Faktury Folders",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Unread Gmail Invoices",
             "type": "main",
             "index": 0
           }
@@ -1668,28 +1994,6 @@
         ]
       ]
     },
-    "Upload a file1": {
-      "main": [
-        [
-          {
-            "node": "Update a message",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Upload a file": {
-      "main": [
-        [
-          {
-            "node": "Update a message1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "From Mailchip?": {
       "main": [
         [
@@ -1702,17 +2006,6 @@
         [
           {
             "node": "Get links from message body",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Convert HTML to PDF": {
-      "main": [
-        [
-          {
-            "node": "StoreFile",
             "type": "main",
             "index": 0
           }
@@ -1937,6 +2230,210 @@
           }
         ]
       ]
+    },
+    "Fetch Unread Gmail Invoices": {
+      "main": [
+        [
+          {
+            "node": "Gmail Has Attachment?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Has Attachment?": {
+      "main": [
+        [
+          {
+            "node": "Gmail Pick PDF Attachment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gmail Get Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Get Links": {
+      "main": [
+        [
+          {
+            "node": "Gmail Split URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Split URLs": {
+      "main": [
+        [
+          {
+            "node": "Gmail Fetch URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Fetch URL": {
+      "main": [
+        [
+          {
+            "node": "Gmail Filter PDFs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Filter PDFs": {
+      "main": [
+        [
+          {
+            "node": "Gmail Prepare Body PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gmail Log Dropped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Pick PDF Attachment": {
+      "main": [
+        [
+          {
+            "node": "StoreFile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Prepare Body PDF": {
+      "main": [
+        [
+          {
+            "node": "StoreFile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert HTML to PDF": {
+      "main": [
+        [
+          {
+            "node": "Prepare Mailchimp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Mailchimp": {
+      "main": [
+        [
+          {
+            "node": "StoreFile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file1": {
+      "main": [
+        [
+          {
+            "node": "Mark Read Source? (JDG)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Read Source? (JDG)": {
+      "main": [
+        [
+          {
+            "node": "Gmail Mark Read JDG",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Mark Read JDG": {
+      "main": [
+        [
+          {
+            "node": "Append data to sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload a file": {
+      "main": [
+        [
+          {
+            "node": "Mark Read Source? (INC)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Read Source? (INC)": {
+      "main": [
+        [
+          {
+            "node": "Gmail Mark Read INC",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Mark Read INC": {
+      "main": [
+        [
+          {
+            "node": "Append data to sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -1946,11 +2443,13 @@
     "callerPolicy": "workflowsFromSameOwner"
   },
   "staticData": null,
-  "meta": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
   "pinData": {},
-  "versionId": "601f59aa-22d2-4133-9e93-72c42091b007",
+  "versionId": "633253fa-f962-41fe-92fd-09c51f1b7d72",
   "activeVersionId": null,
-  "versionCounter": 154,
+  "versionCounter": 163,
   "triggerCount": 0,
   "shared": [
     {
@@ -1971,6 +2470,5 @@
       }
     }
   ],
-  "tags": [],
-  "activeVersion": null
+  "tags": []
 }
