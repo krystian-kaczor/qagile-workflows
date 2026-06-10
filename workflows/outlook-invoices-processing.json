@@ -1413,7 +1413,7 @@
         "simple": false,
         "filters": {
           "readStatus": "unread",
-          "q": "from:stripe.com subject:receipt (ElevenLabs OR \"Eleven Labs\" OR HeyGen OR \"fal.ai\" OR fal)"
+          "q": "label:QAgile-Invoices"
         },
         "options": {
           "downloadAttachments": true

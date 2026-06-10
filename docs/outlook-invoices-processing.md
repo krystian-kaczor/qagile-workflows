@@ -74,7 +74,7 @@ Reads unread emails from **two sources** — designated Outlook "Faktury" (invoi
 
 | ID | Name | Type | Notes |
 |---|---|---|---|
-| f95b1446 | Fetch Unread Gmail Invoices | gmail | `getAll`, `simple:false`, `downloadAttachments:true`, `readStatus:unread`. `q` = `from:stripe.com subject:receipt (ElevenLabs OR "Eleven Labs" OR HeyGen OR "fal.ai" OR fal)` — vendor invoices bill **through Stripe**, NOT from the vendor domains. Branches off ▶️ Start in parallel with Outlook fetch. Credential `gmailOAuth2` = `oGattM1WQITzTJAj` ("Gmail account"). |
+| f95b1446 | Fetch Unread Gmail Invoices | gmail | `getAll`, `simple:false`, `downloadAttachments:true`, `readStatus:unread`. `q` = `label:QAgile-Invoices` — fetches only unread emails carrying the Gmail label **QAgile/Invoices** (id `Label_8835956035448197511`; Gmail search syntax converts `/` → `-`). This label is applied to Stripe vendor receipts (ElevenLabs/HeyGen/Qwiklabs/fal.ai) **and** Google Ads billing (`payments-noreply@google.com`) — a broader net than the previous `from:stripe.com` query. Branches off ▶️ Start in parallel with Outlook fetch. Credential `gmailOAuth2` = `oGattM1WQITzTJAj` ("Gmail account"). |
 | 6e4a9ceb | Gmail Has Attachment? | if | Checks for `attachment_N` binary keys (Gmail has no `hasAttachments` field) |
 | 2f41326d | Gmail Pick PDF Attachment | code | Picks PDF attachment, dedupes invoice-vs-receipt, emits `binary.data` + `messageID` + `source:'gmail'` |
 | e297ad85 | Gmail Get Links | code | Extracts URLs from Gmail `html`/`text` body |
@@ -156,6 +156,12 @@ StoreFile → Analyze document (Gemini AI) → Validate Data → Invoice Data Va
 - **`Gmail Get Links` / body-link path** is a fallback only; its regex now keeps only PDF-looking URLs (`.pdf`, `/pdf`, `files.stripe.com`, `receipts/invoices`) to avoid the earlier bug where 544 tracking/stylesheet URLs were fetched and timed out. `Gmail Fetch URL` has `retryOnFail` + `onError: continueRegularOutput` so a single dead URL can't fail the whole run.
 
 ## Changes (2026-06-10)
+
+### Gmail fetch now filters by label `QAgile/Invoices`
+
+- Changed `Fetch Unread Gmail Invoices` `q` from the vendor/Stripe query to `label:QAgile-Invoices`. The node now pulls every **unread** email tagged with the Gmail label **QAgile/Invoices** (id `Label_8835956035448197511`), regardless of sender.
+- Gmail search syntax represents the nested label `QAgile/Invoices` as `QAgile-Invoices` (slash → hyphen). Verified: the query resolves to 201 labeled threads (Stripe receipts for ElevenLabs/HeyGen/Qwiklabs + Google Ads billing PDFs).
+- Broader coverage than before — Google Ads invoices (`payments-noreply@google.com`) are now caught, which the old `from:stripe.com` filter missed. Any new vendor just needs the label applied (manually or via a Gmail filter rule).
 
 ### Fixed "Id is malformed" in Outlook `Update a message` (Gmail items mis-routed)
 
